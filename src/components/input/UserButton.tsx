@@ -27,8 +27,8 @@ import {
   Settings,
   Sun,
   SunMoon,
-  UserCircle,
 } from '@/components/icons';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DOCS_URL } from '@/lib/constants';
 import { languages } from '@/lib/lang';
 
@@ -111,34 +111,18 @@ export function UserButton({ showText = true, onClose }: UserButtonProps) {
     },
   ].filter(Boolean);
 
+  const initials = user.username.slice(0, 2).toUpperCase();
   const trigger = (
     <Button
-      variant="zero"
+      variant="quiet"
       aria-label={showText ? undefined : user.username}
-      style={{
-        display: 'flex',
-        padding: 0,
-        width: '100%',
-        flexGrow: 1,
-        justifyContent: 'flex-start',
-      }}
+      className="h-9 justify-start gap-2 rounded-md px-2"
+      style={{ width: '100%' }}
     >
-      <Row
-        alignItems="center"
-        flexGrow={1}
-        width="100%"
-        hover={{ backgroundColor: 'surface-sunken' }}
-        borderRadius
-        minHeight="40px"
-        style={{ textWrap: 'nowrap', overflow: 'hidden' }}
-      >
-        <Row alignItems="center" gap padding>
-          <Icon>
-            <UserCircle />
-          </Icon>
-          {showText && <Text>{user.username}</Text>}
-        </Row>
-      </Row>
+      <Avatar size="sm" aria-hidden="true">
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+      {showText && <Text className="truncate">{user.username}</Text>}
     </Button>
   );
 

@@ -1,6 +1,6 @@
-import { Column, Grid, Heading, Icon, Row, Text } from '@umami/react-zen';
 import type { ReactNode } from 'react';
-import { LinkButton } from './LinkButton';
+import Link from '@/components/common/Link';
+import { cn } from '@/lib/cn';
 
 export function PageHeader({
   title,
@@ -21,38 +21,36 @@ export function PageHeader({
   className?: string;
   children?: ReactNode;
 }) {
+  const heading = (
+    <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+  );
+
   return (
-    <Grid
-      columns={{ base: '1fr', md: '1fr 1fr' }}
-      paddingY="6"
-      marginBottom="6"
-      border={showBorder ? 'bottom' : undefined}
+    <header
+      className={cn(
+        'mb-6 grid items-center gap-4 py-6 md:grid-cols-[minmax(0,1fr)_auto]',
+        showBorder && 'border-b border-border',
+      )}
     >
-      <Column gap="2">
+      <div className="flex min-w-0 flex-col gap-1.5">
         {label}
-        <Row alignItems="center" gap="3">
-          {icon && (
-            <Icon size="md" color="muted">
-              {icon}
-            </Icon>
-          )}
+        <div className="flex min-w-0 items-center gap-3">
+          {icon ? <span className="text-muted-foreground">{icon}</span> : null}
           {title && titleHref ? (
-            <LinkButton href={titleHref} variant="quiet">
-              <Heading size={{ base: 'lg', md: '2xl', lg: '3xl' }}>{title}</Heading>
-            </LinkButton>
+            <Link href={titleHref} className="min-w-0 hover:underline">
+              {heading}
+            </Link>
           ) : (
-            title && <Heading size={{ base: 'lg', md: '2xl', lg: '3xl' }}>{title}</Heading>
+            title && heading
           )}
-        </Row>
-        {description && (
-          <Text color="muted" truncate style={{ maxWidth: 600 }} title={description}>
+        </div>
+        {description ? (
+          <p className="max-w-xl truncate text-sm text-muted-foreground" title={description}>
             {description}
-          </Text>
-        )}
-      </Column>
-      <Row justifyContent="flex-end" alignItems="center">
-        {children}
-      </Row>
-    </Grid>
+          </p>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">{children}</div>
+    </header>
   );
 }

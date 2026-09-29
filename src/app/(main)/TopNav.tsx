@@ -41,12 +41,9 @@ export function TopNav() {
       top="0"
       alignItems="center"
       justifyContent="flex-start"
-      paddingY="2"
-      paddingX="3"
-      paddingRight="5"
       width="100%"
-      zIndex={100}
-      backgroundColor="surface-raised"
+      zIndex={40}
+      className="h-14 border-b border-border bg-background/80 px-4 backdrop-blur-md"
     >
       <Row alignItems="center">
         <TeamsButton />
@@ -104,17 +101,6 @@ export function TopNav() {
           </>
         )}
       </Row>
-      <div
-        style={{
-          position: 'absolute',
-          bottom: -16,
-          left: 0,
-          right: 0,
-          height: 16,
-          background: 'linear-gradient(to bottom, var(--zen-surface-raised), transparent)',
-          pointerEvents: 'none',
-        }}
-      />
     </Row>
   );
 }

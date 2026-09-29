@@ -1,9 +1,7 @@
-import { Column, Row, Tooltip, TooltipTrigger } from '@umami/react-zen';
-import { IconLabel } from '@/components/common/IconLabel';
-import Link from '@/components/common/Link';
 import { NavMenu } from '@/components/common/NavMenu';
 import { useMessages, useNavigation } from '@/components/hooks';
 import { ArrowLeft, Globe, ShieldCheck, User, Users } from '@/components/icons';
+import { SidebarLink } from '@/components/nav/SidebarLink';
 
 export function AdminNav({ onItemClick }: { onItemClick?: () => void }) {
   const { t, labels } = useMessages();
@@ -46,27 +44,19 @@ export function AdminNav({ onItemClick }: { onItemClick?: () => void }) {
     ?.find(({ path }) => path && pathname.startsWith(path))?.id;
 
   return (
-    <Column gap="2">
-      <Link href={renderUrl('/websites', false)} role="button" onClick={onItemClick}>
-        <TooltipTrigger delay={0}>
-          <Row
-            tabIndex={0}
-            alignItems="center"
-            hover={{ backgroundColor: 'surface-sunken' }}
-            borderRadius
-            minHeight="9"
-          >
-            <IconLabel icon={<ArrowLeft />} label={t(labels.back)} padding />
-          </Row>
-          <Tooltip placement="right">{t(labels.back)}</Tooltip>
-        </TooltipTrigger>
-      </Link>
+    <div className="flex flex-col gap-1">
+      <SidebarLink
+        href={renderUrl('/websites', false)}
+        label={t(labels.back)}
+        icon={<ArrowLeft />}
+        onClick={onItemClick}
+      />
       <NavMenu
         items={items}
         selectedKey={selectedKey}
         allowMinimize={false}
         onItemClick={onItemClick}
       />
-    </Column>
+    </div>
   );
 }

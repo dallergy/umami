@@ -1,5 +1,5 @@
 'use client';
-import { Column, Grid, Loading, Row } from '@umami/react-zen';
+import { Loading } from '@umami/react-zen';
 import Script from 'next/script';
 import { useEffect } from 'react';
 import { MobileNav } from '@/app/(main)/MobileNav';
@@ -60,27 +60,23 @@ export function App({ children }) {
   }
 
   return (
-    <Grid
-      columns={{ base: '1fr', lg: 'auto 1fr' }}
-      rows={{ base: 'auto 1fr', lg: '1fr' }}
-      height="screen"
-    >
-      <Row display={{ base: 'flex', lg: 'none' }} alignItems="center" gap padding="3">
-        <MobileNav />
-      </Row>
-      <Column display={{ base: 'none', lg: 'flex' }} minHeight="0" style={{ overflow: 'hidden' }}>
+    <div className="flex min-h-screen bg-background text-foreground">
+      <div className="sticky top-0 hidden h-screen shrink-0 lg:flex">
         <SideNav />
-      </Column>
-      <Column overflowX="hidden" minHeight="0" position="relative">
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center border-b border-border px-3 py-2 lg:hidden">
+          <MobileNav />
+        </div>
         <TopNav />
-        <Column
-          alignItems="center"
+        <div
+          className="min-w-0 flex-1"
           aria-hidden={needsTwoFactorSetup || undefined}
           style={needsTwoFactorSetup ? { pointerEvents: 'none' } : undefined}
         >
           {children}
-        </Column>
-      </Column>
+        </div>
+      </div>
       {needsTwoFactorSetup && <TwoFactorSetupModal required={true} />}
       <UpdateNotice user={user} config={config} />
       {process.env.NODE_ENV === 'production' && !pathname.includes('/share/') && (
@@ -103,6 +99,6 @@ export function App({ children }) {
           src={`${process.env.basePath || ''}/recorder.js`}
         />
       )}
-    </Grid>
+    </div>
   );
 }

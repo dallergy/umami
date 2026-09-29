@@ -1,6 +1,4 @@
-import { Column, Heading, Row, Text } from '@umami/react-zen';
-import { IconLabel } from '@/components/common/IconLabel';
-import Link from '@/components/common/Link';
+import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
 
 interface NavMenuData {
   id: string;
@@ -22,57 +20,30 @@ export interface NavMenuProps {
   onItemClick?: () => void;
 }
 
-export function NavMenu({
-  items = [],
-  title,
-  selectedKey,
-  allowMinimize,
-  onItemClick,
-  ...props
-}: NavMenuProps) {
-  const renderItems = (items: NavMenuData[]) => {
-    return items?.map(({ id, label, icon, path }) => {
-      const isSelected = selectedKey === id;
-
-      return (
-        <Link key={id} href={path} onClick={onItemClick}>
-          <Row
-            padding
-            borderRadius
-            hover={{ backgroundColor: 'surface-sunken' }}
-            backgroundColor={isSelected ? 'surface-sunken' : undefined}
-          >
-            <IconLabel icon={icon}>
-              <Text weight={isSelected ? 'bold' : 'normal'}>{label}</Text>
-            </IconLabel>
-          </Row>
-        </Link>
-      );
-    });
-  };
-
+export function NavMenu({ items = [], title, selectedKey, onItemClick }: NavMenuProps) {
   return (
-    <Column gap justifyContent="space-between" position="sticky">
-      {title && (
-        <Row padding>
-          <Heading size="lg">{title}</Heading>
-        </Row>
-      )}
-      <Column gap="3" {...props}>
-        {items?.map(({ label, items }, index) => {
-          if (label) {
-            return (
-              <Column key={`${label}${index}`} gap="1" minHeight="40px">
-                <Row paddingX="3" marginTop="2">
-                  <Text weight="bold">{label}</Text>
-                </Row>
-                {renderItems(items)}
-              </Column>
-            );
-          }
+    <div className="flex flex-col gap-1">
+      {title ? <div className="px-2 py-2 text-sm font-semibold tracking-tight">{title}</div> : null}
+      {items?.map(({ label, items: sectionItems }, index) => {
+        if (!label) {
           return null;
-        })}
-      </Column>
-    </Column>
+        }
+
+        return (
+          <SidebarSection key={`${label}${index}`} label={label}>
+            {sectionItems?.map(({ id, label: itemLabel, icon, path }) => (
+              <SidebarLink
+                key={id}
+                href={path}
+                label={itemLabel}
+                icon={icon}
+                selected={selectedKey === id}
+                onClick={onItemClick}
+              />
+            ))}
+          </SidebarSection>
+        );
+      })}
+    </div>
   );
 }

@@ -1,28 +1,12 @@
-import { Icon, Row, type RowProps, Text } from '@umami/react-zen';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { ArrowRight } from '@/components/icons';
-
-const STYLES = {
-  positive: {
-    color: `var(--zen-status-success)`,
-    background: `var(--zen-status-success-bg)`,
-  },
-  negative: {
-    color: `var(--zen-status-error)`,
-    background: `var(--zen-status-error-bg)`,
-  },
-  neutral: {
-    color: `var(--zen-fg-muted)`,
-    background: `var(--zen-surface-raised)`,
-  },
-};
+import { cn } from '@/lib/cn';
 
 export function ChangeLabel({
   value,
-  size,
   reverseColors,
   children,
-  ...props
+  title,
 }: {
   value: number;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -30,31 +14,24 @@ export function ChangeLabel({
   reverseColors?: boolean;
   showPercentage?: boolean;
   children?: ReactNode;
-} & RowProps) {
+}) {
   const positive = value >= 0;
-  const negative = value < 0;
   const neutral = value === 0 || Number.isNaN(value);
-  const good = reverseColors ? negative : positive;
-
-  const style =
-    STYLES[good && 'positive'] || STYLES[!good && 'negative'] || STYLES[neutral && 'neutral'];
+  const good = reverseColors ? !positive : positive;
 
   return (
-    <Row
-      {...props}
-      style={style}
-      alignItems="center"
-      alignSelf="flex-start"
-      paddingX="2"
-      paddingY="1"
-      gap="2"
-    >
-      {!neutral && (
-        <Icon rotate={positive ? -90 : 90} size={size}>
-          <ArrowRight />
-        </Icon>
+    <span
+      title={title}
+      className={cn(
+        'inline-flex items-center gap-1 self-start rounded-md px-1.5 py-0.5 text-xs font-medium tabular-nums',
+        neutral && 'bg-muted text-muted-foreground',
+        !neutral && good && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+        !neutral && !good && 'bg-red-500/10 text-red-700 dark:text-red-300',
       )}
-      <Text>{children || value}</Text>
-    </Row>
+    >
+      {!neutral &&
+        (positive ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />)}
+      <span>{children || value}</span>
+    </span>
   );
 }

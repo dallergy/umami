@@ -1,9 +1,10 @@
-import { Button, Column, Icon, Row, Text, Tooltip, TooltipTrigger } from '@umami/react-zen';
+import { Button, Icon, Tooltip, TooltipTrigger } from '@umami/react-zen';
 import { useSpring, useTransform } from 'motion/react';
 import { type ReactNode, useEffect } from 'react';
 import { AnimatedDiv } from '@/components/common/AnimatedDiv';
 import { Info } from '@/components/icons';
 import { ChangeLabel } from '@/components/metrics/ChangeLabel';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatNumber } from '@/lib/format';
 
 export interface MetricCardProps {
@@ -46,20 +47,10 @@ export const MetricCard = ({
   }, [p, pctSpring]);
 
   return (
-    <Column
-      justifyContent="center"
-      paddingX="6"
-      paddingY="4"
-      borderRadius
-      backgroundColor="surface"
-      border
-      gap="4"
-    >
+    <Card className="gap-3 rounded-xl py-4 shadow-xs">
       {showLabel && (
-        <Row justifyContent="space-between" alignItems="flex-start">
-          <Text weight="bold" wrap="nowrap">
-            {label}
-          </Text>
+        <CardHeader className="flex flex-row items-start justify-between gap-2 px-5">
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
           {tooltip && (
             <TooltipTrigger delay={0}>
               <Button size="sm" variant="quiet">
@@ -70,16 +61,18 @@ export const MetricCard = ({
               <Tooltip placement="top">{tooltip}</Tooltip>
             </TooltipTrigger>
           )}
-        </Row>
+        </CardHeader>
       )}
-      <Text size="4xl" weight="bold" wrap="nowrap">
-        <AnimatedDiv title={value?.toString()}>{valueText}</AnimatedDiv>
-      </Text>
-      {showChange && (
-        <ChangeLabel value={change} title={formatValue(change)} reverseColors={reverseColors}>
-          <AnimatedDiv>{pctText}</AnimatedDiv>
-        </ChangeLabel>
-      )}
-    </Column>
+      <CardContent className="flex flex-col items-start gap-2 px-5">
+        <div className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+          <AnimatedDiv title={value?.toString()}>{valueText}</AnimatedDiv>
+        </div>
+        {showChange && (
+          <ChangeLabel value={change} title={formatValue(change)} reverseColors={reverseColors}>
+            <AnimatedDiv>{pctText}</AnimatedDiv>
+          </ChangeLabel>
+        )}
+      </CardContent>
+    </Card>
   );
 };

@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { useEffect } from 'react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useLocale } from '@/components/hooks';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import 'chartjs-adapter-date-fns';
 
 const client = new QueryClient({
@@ -34,14 +35,16 @@ function MessagesProvider({ children }) {
 
 export function Providers({ children }) {
   return (
-    <ZenProvider>
-      <RouterProvider>
-        <MessagesProvider>
-          <QueryClientProvider client={client}>
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </QueryClientProvider>
-        </MessagesProvider>
-      </RouterProvider>
+    <ZenProvider palette="zinc">
+      <TooltipProvider>
+        <RouterProvider>
+          <MessagesProvider>
+            <QueryClientProvider client={client}>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </QueryClientProvider>
+          </MessagesProvider>
+        </RouterProvider>
+      </TooltipProvider>
     </ZenProvider>
   );
 }

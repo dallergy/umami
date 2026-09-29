@@ -1,20 +1,8 @@
-import {
-  Button,
-  type ButtonProps,
-  Column,
-  Icon,
-  Row,
-  Text,
-  Tooltip,
-  TooltipTrigger,
-} from '@umami/react-zen';
+import { Icon } from '@umami/react-zen';
 import { AdminNav } from '@/app/(main)/admin/AdminNav';
 import { SettingsNav } from '@/app/(main)/settings/SettingsNav';
 import { WebsiteNav } from '@/app/(main)/websites/[websiteId]/WebsiteNav';
-import { IconLabel } from '@/components/common/IconLabel';
 import Link from '@/components/common/Link';
-import { OverlayScrollArea } from '@/components/common/OverlayScrollArea';
-import styles from '@/components/common/OverlayScrollArea.module.css';
 import { useGlobalState, useMessages, useNavigation } from '@/components/hooks';
 import {
   Globe,
@@ -25,12 +13,16 @@ import {
   PanelsLeftBottom,
 } from '@/components/icons';
 import { UserButton } from '@/components/input/UserButton';
+import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
 import { Logo } from '@/components/svg';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/cn';
 
-export function SideNav(props: any) {
+export function SideNav() {
   const { t, labels } = useMessages();
   const { pathname, renderUrl, websiteId, teamId } = useNavigation();
-  const [isCollapsed] = useGlobalState('sidenav-collapsed', false);
+  const [isCollapsed, setIsCollapsed] = useGlobalState('sidenav-collapsed', false);
 
   const links = [
     ...(!teamId
@@ -70,113 +62,69 @@ export function SideNav(props: any) {
   ];
 
   return (
-    <Column
-      {...props}
-      backgroundColor="surface"
-      border
-      borderRadius
-      padding="2"
-      flexGrow="1"
-      minHeight="0"
-      margin="2"
+    <aside
+      className="flex h-full min-h-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
       style={{
-        width: isCollapsed ? '60px' : '240px',
+        width: isCollapsed ? 60 : 240,
         transition: 'width 0.2s ease-in-out',
-        overflow: 'hidden',
       }}
     >
-      <Row
-        alignItems="center"
-        justifyContent="space-between"
-        minHeight="9"
-        style={{ flexShrink: 0 }}
-      >
-        <Row
-          padding="3"
-          alignItems="center"
-          justifyContent={isCollapsed ? 'center' : 'space-between'}
-          flexGrow="1"
-        >
-          {!isCollapsed && (
-            <IconLabel icon={<Logo />}>
-              <Text weight="bold">umami</Text>
-            </IconLabel>
-          )}
-          <PanelButton />
-        </Row>
-      </Row>
-      <OverlayScrollArea
-        className={isCollapsed ? styles.collapsed : undefined}
-        style={{ flexGrow: 1, minHeight: 0 }}
-      >
-        {websiteId ? (
-          <WebsiteNav websiteId={websiteId} isCollapsed={isCollapsed} />
-        ) : pathname.includes('/settings') ? (
-          <SettingsNav isCollapsed={isCollapsed} />
-        ) : pathname.includes('/admin') ? (
-          <AdminNav />
-        ) : (
-          <Column gap="2">
-            {links.map(({ id, path, label, icon }) => {
-              const isSelected = pathname.startsWith(renderUrl(path, false));
-              const content = (
-                <Row
-                  tabIndex={0}
-                  alignItems="center"
-                  justifyContent={isCollapsed ? 'center' : undefined}
-                  hover={{ backgroundColor: 'surface-sunken' }}
-                  backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                  borderRadius
-                  minHeight="9"
-                >
-                  <IconLabel
-                    icon={icon}
-                    label={isCollapsed ? '' : label}
-                    weight={isSelected ? 'bold' : undefined}
-                    padding
-                  />
-                </Row>
-              );
-              return (
-                <Link key={id} href={renderUrl(path, false)} role="button">
-                  {isCollapsed ? (
-                    <TooltipTrigger delay={0}>
-                      {content}
-                      <Tooltip placement="right">{label}</Tooltip>
-                    </TooltipTrigger>
-                  ) : (
-                    content
-                  )}
-                </Link>
-              );
-            })}
-          </Column>
+      <div
+        className={cn(
+          'flex h-14 shrink-0 items-center gap-2 px-3',
+          isCollapsed && 'justify-center px-2',
         )}
-      </OverlayScrollArea>
-      <Row
-        paddingTop="2"
-        width="100%"
-        justifyContent={isCollapsed ? 'center' : undefined}
-        style={{ flexShrink: 0 }}
       >
+        {!isCollapsed && (
+          <Link
+            href={renderUrl('/websites', false)}
+            className="flex min-w-0 flex-1 items-center gap-2 text-sidebar-foreground"
+          >
+            <Logo className="size-5 shrink-0" />
+            <span className="truncate text-sm font-semibold tracking-tight">umami</span>
+          </Link>
+        )}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Toggle sidebar"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <Icon strokeColor="muted">
+            <PanelLeft />
+          </Icon>
+        </Button>
+      </div>
+      <ScrollArea className="min-h-0 flex-1">
+        <div className={cn('flex flex-col gap-1 px-2 pb-3', isCollapsed && 'items-center')}>
+          {websiteId ? (
+            <WebsiteNav websiteId={websiteId} isCollapsed={isCollapsed} />
+          ) : pathname.includes('/settings') ? (
+            <SettingsNav isCollapsed={isCollapsed} />
+          ) : pathname.includes('/admin') ? (
+            <AdminNav />
+          ) : (
+            <SidebarSection>
+              {links.map(({ id, path, label, icon }) => {
+                const href = renderUrl(path, false);
+                return (
+                  <SidebarLink
+                    key={id}
+                    href={href}
+                    label={label}
+                    icon={icon}
+                    collapsed={isCollapsed}
+                    selected={pathname.startsWith(href)}
+                  />
+                );
+              })}
+            </SidebarSection>
+          )}
+        </div>
+      </ScrollArea>
+      <div className={cn('shrink-0 border-t border-sidebar-border p-2', isCollapsed && 'px-1.5')}>
         <UserButton showText={!isCollapsed} />
-      </Row>
-    </Column>
+      </div>
+    </aside>
   );
 }
-
-const PanelButton = (props: ButtonProps) => {
-  const [isCollapsed, setIsCollapsed] = useGlobalState('sidenav-collapsed', false);
-  return (
-    <Button
-      onPress={() => setIsCollapsed(!isCollapsed)}
-      variant="zero"
-      {...props}
-      style={{ padding: 0 }}
-    >
-      <Icon strokeColor="muted">
-        <PanelLeft />
-      </Icon>
-    </Button>
-  );
-};

@@ -1,10 +1,10 @@
 'use client';
-import { Column, Loading } from '@umami/react-zen';
+import { Loading } from '@umami/react-zen';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { type PropsWithChildren, useEffect } from 'react';
 import { useLoginQuery } from '@/components/hooks';
+import { AuthFrame } from './AuthFrame';
 import { LoginForm } from './LoginForm';
-import { PropsWithChildren } from 'react';
 
 export function LoginPageWrapper({ children }: PropsWithChildren) {
   const { user, isLoading } = useLoginQuery();
@@ -21,22 +21,16 @@ export function LoginPageWrapper({ children }: PropsWithChildren) {
   }
 
   return (
-    <Column
-      alignItems="center"
-      justifyContent="flex-start"
-      height="100vh"
-      backgroundColor="surface-raised"
-      style={{ paddingTop: '15vh' }}
-    >
-      {children}
-    </Column>
+    <div className="flex min-h-svh items-center justify-center bg-muted px-4 py-12">{children}</div>
   );
 }
 
 export function LoginPage() {
   return (
     <LoginPageWrapper>
-      <LoginForm />
+      <AuthFrame>
+        <LoginForm />
+      </AuthFrame>
     </LoginPageWrapper>
   );
 }

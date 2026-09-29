@@ -1,8 +1,6 @@
-import { Column, Row, Text, Tooltip, TooltipTrigger } from '@umami/react-zen';
-import { IconLabel } from '@/components/common/IconLabel';
-import Link from '@/components/common/Link';
 import { useMessages, useNavigation } from '@/components/hooks';
 import { ArrowLeft, KeyRound, Settings2, ShieldCheck, UserCircle, Users } from '@/components/icons';
+import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
 
 export function SettingsNav({
   isCollapsed,
@@ -57,74 +55,32 @@ export function SettingsNav({
     .find(({ path }) => path && pathname.includes(path.split('?')[0]))?.id;
 
   return (
-    <Column gap="2">
-      <Link href={renderUrl('/websites', false)} role="button" onClick={onItemClick}>
-        {(() => {
-          const content = (
-            <Row
-              tabIndex={0}
-              alignItems="center"
-              justifyContent={isCollapsed ? 'center' : undefined}
-              hover={{ backgroundColor: 'surface-sunken' }}
-              borderRadius
-              minHeight="9"
-            >
-              <IconLabel icon={<ArrowLeft />} label={isCollapsed ? '' : t(labels.back)} padding />
-            </Row>
-          );
-
-          return isCollapsed ? (
-            <TooltipTrigger delay={0}>
-              {content}
-              <Tooltip placement="right">{t(labels.back)}</Tooltip>
-            </TooltipTrigger>
-          ) : (
-            content
-          );
-        })()}
-      </Link>
+    <div className="flex flex-col gap-1">
+      <SidebarLink
+        href={renderUrl('/websites', false)}
+        label={t(labels.back)}
+        icon={<ArrowLeft />}
+        collapsed={isCollapsed}
+        onClick={onItemClick}
+      />
       {items.map(({ label: sectionLabel, items: sectionItems }, index) => (
-        <Column key={`${sectionLabel}${index}`} gap="1" marginBottom="1">
-          {!isCollapsed && (
-            <Row paddingX="3" marginTop="2">
-              <Text weight="bold">{sectionLabel}</Text>
-            </Row>
-          )}
-          {sectionItems.map(({ id, path, label, icon }) => {
-            const isSelected = selectedKey === id;
-            const content = (
-              <Row
-                tabIndex={0}
-                alignItems="center"
-                justifyContent={isCollapsed ? 'center' : undefined}
-                hover={{ backgroundColor: 'surface-sunken' }}
-                backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                borderRadius
-                minHeight="9"
-              >
-                <IconLabel
-                  icon={icon}
-                  label={isCollapsed ? '' : label}
-                  weight={isSelected ? 'bold' : undefined}
-                  padding
-                />
-              </Row>
-            );
-            return (
-              <Link key={id} href={path} role="button" onClick={onItemClick}>
-                {isCollapsed ? (
-                  <TooltipTrigger delay={0}>
-                    {content}
-                    <Tooltip placement="right">{label}</Tooltip>
-                  </TooltipTrigger>
-                ) : (
-                  content
-                )}
-              </Link>
-            );
-          })}
-        </Column>
+        <SidebarSection
+          key={`${sectionLabel}${index}`}
+          label={isCollapsed ? undefined : sectionLabel}
+        >
+          {sectionItems.map(({ id, path, label, icon }) => (
+            <SidebarLink
+              key={id}
+              href={path}
+              label={label}
+              icon={icon}
+              selected={selectedKey === id}
+              collapsed={isCollapsed}
+              onClick={onItemClick}
+            />
+          ))}
+        </SidebarSection>
       ))}
-    </Column>
+    </div>
   );
 }
