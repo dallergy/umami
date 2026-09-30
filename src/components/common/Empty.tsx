@@ -1,4 +1,3 @@
-import { Row } from '@umami/react-zen';
 import { useMessages } from '@/components/hooks';
 
 export interface EmptyProps {
@@ -9,16 +8,8 @@ export function Empty({ message }: EmptyProps) {
   const { t, messages } = useMessages();
 
   return (
-    <Row
-      color="muted"
-      alignItems="center"
-      justifyContent="center"
-      width="100%"
-      height="100%"
-      minHeight="70px"
-      flexGrow={1}
-    >
+    <div className="flex min-h-[70px] w-full flex-1 items-center justify-center px-4 py-6 text-sm text-muted-foreground">
       {message || t(messages.noDataAvailable)}
-    </Row>
+    </div>
   );
 }

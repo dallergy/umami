@@ -1,17 +1,13 @@
 import {
-  Column,
   Form,
   FormButtons,
   FormField,
   FormSubmitButton,
-  Heading,
-  Icon,
   PasswordField,
   TextField,
 } from '@umami/react-zen';
 import { useRouter } from 'next/navigation';
 import { useMessages, useUpdateQuery } from '@/components/hooks';
-import { Logo } from '@/components/svg';
 import { setClientAuthToken } from '@/lib/client';
 import { consumeReturnUrl } from '@/lib/return-url';
 import { setUser } from '@/store/app';
@@ -37,45 +33,39 @@ export function LoginForm() {
   };
 
   return (
-    <Column justifyContent="center" alignItems="center" gap="6">
-      <Icon size="lg">
-        <Logo />
-      </Icon>
-      <Heading>umami</Heading>
-      <Form
-        onSubmit={handleSubmit}
-        error={getErrorMessage(error)}
-        defaultValues={{ username: '', password: '' }}
-        style={{ minWidth: 300 }}
+    <Form
+      onSubmit={handleSubmit}
+      error={getErrorMessage(error)}
+      defaultValues={{ username: '', password: '' }}
+      style={{ width: '100%' }}
+    >
+      <FormField
+        label={t(labels.username)}
+        data-test="input-username"
+        name="username"
+        rules={{ required: t(labels.required) }}
       >
-        <FormField
-          label={t(labels.username)}
-          data-test="input-username"
-          name="username"
-          rules={{ required: t(labels.required) }}
-        >
-          <TextField autoComplete="username" />
-        </FormField>
+        <TextField autoComplete="username" />
+      </FormField>
 
-        <FormField
-          label={t(labels.password)}
-          data-test="input-password"
-          name="password"
-          rules={{ required: t(labels.required) }}
+      <FormField
+        label={t(labels.password)}
+        data-test="input-password"
+        name="password"
+        rules={{ required: t(labels.required) }}
+      >
+        <PasswordField autoComplete="current-password" />
+      </FormField>
+      <FormButtons>
+        <FormSubmitButton
+          data-test="button-submit"
+          variant="primary"
+          style={{ flex: 1 }}
+          isDisabled={false}
         >
-          <PasswordField autoComplete="current-password" />
-        </FormField>
-        <FormButtons>
-          <FormSubmitButton
-            data-test="button-submit"
-            variant="primary"
-            style={{ flex: 1 }}
-            isDisabled={false}
-          >
-            {t(labels.login)}
-          </FormSubmitButton>
-        </FormButtons>
-      </Form>
-    </Column>
+          {t(labels.login)}
+        </FormSubmitButton>
+      </FormButtons>
+    </Form>
   );
 }

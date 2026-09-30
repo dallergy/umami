@@ -1,17 +1,8 @@
-import {
-  Button,
-  Column,
-  type ColumnProps,
-  Heading,
-  Icon,
-  Row,
-  Text,
-  Tooltip,
-  TooltipTrigger,
-} from '@umami/react-zen';
+import { Button, Column, type ColumnProps, Icon, Tooltip, TooltipTrigger } from '@umami/react-zen';
 import { type ReactNode, useState } from 'react';
 import { useMessages } from '@/components/hooks';
 import { Maximize, X } from '@/components/icons';
+import { cn } from '@/lib/cn';
 
 export interface PanelProps extends ColumnProps {
   title?: string;
@@ -39,6 +30,7 @@ export function Panel({
   children,
   height,
   width,
+  className,
   ...props
 }: PanelProps) {
   const { t, labels } = useMessages();
@@ -50,20 +42,22 @@ export function Panel({
 
   return (
     <Column
+      data-panel=""
       paddingY="6"
       paddingX={{ base: '3', md: '6' }}
-      border
-      borderRadius
-      backgroundColor="surface"
       position="relative"
       gap
+      className={cn(
+        'rounded-xl border border-border bg-card text-card-foreground shadow-xs',
+        className,
+      )}
       {...props}
       style={{ ...style, ...(isFullscreen ? fullscreenStyles : { height, width }) }}
     >
-      {title && <Heading>{title}</Heading>}
-      {description && <Text color="muted">{description}</Text>}
+      {title ? <h2 className="text-base font-semibold tracking-tight">{title}</h2> : null}
+      {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       {(allowFullscreen || toolbar) && (
-        <Row justifyContent="flex-end" alignItems="center" gap>
+        <div className="flex items-center justify-end gap-1">
           {toolbar}
           {allowFullscreen &&
             (isFullscreen ? (
@@ -82,7 +76,7 @@ export function Panel({
                 <Tooltip>{t(labels.maximize)}</Tooltip>
               </TooltipTrigger>
             ))}
-        </Row>
+        </div>
       )}
       {children}
     </Column>

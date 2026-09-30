@@ -5,7 +5,8 @@
   flex-shrink: 0;
   gap: 6px;
   padding: 2px 8px;
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
@@ -20,64 +21,71 @@
 }
 
 .good {
-  color: #15803d;
-  background: #dcfce7;
+  color: oklch(0.393 0.095 152.535);
+  background: oklch(0.723 0.219 149.579 / 0.14);
+  border-color: oklch(0.723 0.219 149.579 / 0.25);
 }
 
 .good .dot {
-  background: #16a34a;
+  background: oklch(0.627 0.194 149.214);
 }
 
 .warning {
-  color: #a16207;
-  background: #fef9c3;
+  color: oklch(0.421 0.095 57.708);
+  background: oklch(0.795 0.184 86.047 / 0.16);
+  border-color: oklch(0.795 0.184 86.047 / 0.28);
 }
 
 .warning .dot {
-  background: #ca8a04;
+  background: oklch(0.666 0.157 58.318);
 }
 
 .danger {
-  color: #b91c1c;
-  background: #fee2e2;
+  color: oklch(0.396 0.141 25.723);
+  background: oklch(0.637 0.237 25.331 / 0.12);
+  border-color: oklch(0.637 0.237 25.331 / 0.24);
 }
 
 .danger .dot {
-  background: #dc2626;
+  background: oklch(0.577 0.245 27.325);
 }
 
 .gray {
-  color: var(--zen-fg-muted);
-  background: var(--zen-surface-sunken);
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border-color: var(--border);
 }
 
 .gray .dot {
-  background: var(--zen-fg-muted);
+  background: var(--muted-foreground);
 }
 
 :global([data-theme="dark"]) .good {
-  color: #86efac;
-  background: rgba(22, 163, 74, 0.15);
+  color: oklch(0.871 0.15 154.449);
+  background: oklch(0.723 0.219 149.579 / 0.16);
+  border-color: oklch(0.723 0.219 149.579 / 0.28);
 }
 
 :global([data-theme="dark"]) .good .dot {
-  background: #4ade80;
+  background: oklch(0.792 0.209 151.711);
 }
 
 :global([data-theme="dark"]) .warning {
-  color: #fde047;
-  background: rgba(202, 138, 4, 0.15);
+  color: oklch(0.945 0.129 101.54);
+  background: oklch(0.795 0.184 86.047 / 0.16);
+  border-color: oklch(0.795 0.184 86.047 / 0.28);
 }
 
 :global([data-theme="dark"]) .warning .dot {
-  background: #facc15;
+  background: oklch(0.852 0.199 91.936);
 }
 
 :global([data-theme="dark"]) .danger {
-  color: #fca5a5;
-  background: rgba(220, 38, 38, 0.15);
+  color: oklch(0.885 0.062 18.334);
+  background: oklch(0.637 0.237 25.331 / 0.16);
+  border-color: oklch(0.637 0.237 25.331 / 0.3);
 }
 
 :global([data-theme="dark"]) .danger .dot {
-  background: #f87171;
+  background: oklch(0.704 0.191 22.216);
 }

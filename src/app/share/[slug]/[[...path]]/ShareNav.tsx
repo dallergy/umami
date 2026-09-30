@@ -1,19 +1,9 @@
-import {
-  Button,
-  Column,
-  Icon,
-  Row,
-  Text,
-  ThemeButton,
-  Tooltip,
-  TooltipTrigger,
-} from '@umami/react-zen';
-import { IconLabel } from '@/components/common/IconLabel';
-import Link from '@/components/common/Link';
+import { Button, Column, Icon, Row, ThemeButton } from '@umami/react-zen';
 import { useMessages, useNavigation, useShare } from '@/components/hooks';
 import { AlignEndHorizontal, Clock, Eye, PanelLeft, Sheet, Tag, User } from '@/components/icons';
 import { LanguageButton } from '@/components/input/LanguageButton';
 import { PreferencesButton } from '@/components/input/PreferencesButton';
+import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
 import { Funnel, Gauge, Lightning, Magnet, Money, Network, Path, Target } from '@/components/svg';
 import { allowShareFilter, excludeShareFilterParam, getShareTheme } from '@/lib/share';
 import { buildPath } from '@/lib/url';
@@ -148,6 +138,7 @@ export function ShareNav({
       maxHeight="100dvh"
       height="100dvh"
       border={isMobile ? undefined : 'right'}
+      className="bg-sidebar text-sidebar-foreground"
     >
       <Row
         as="header"
@@ -166,51 +157,22 @@ export function ShareNav({
       </Row>
       <Column flexGrow={1} marginTop="2" overflowY="auto" gap="2">
         {items.map(({ label: sectionLabel, items: sectionItems }, index) => (
-          <Column key={`${sectionLabel}${index}`} gap="1" marginBottom="1">
-            {!collapsed && (
-              <Row paddingX="3" marginTop="2">
-                <Text weight="bold">{sectionLabel}</Text>
-              </Row>
-            )}
-            {sectionItems.map(({ id, path, label, icon }) => {
-              const isSelected = selectedKey === id;
-              return (
-                <Link key={id} href={path} role="button" onClick={onItemClick}>
-                  {collapsed ? (
-                    <TooltipTrigger delay={0}>
-                      <Row
-                        tabIndex={0}
-                        alignItems="center"
-                        justifyContent="center"
-                        hover={{ backgroundColor: 'surface-sunken' }}
-                        backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                        borderRadius
-                        minHeight="40px"
-                      >
-                        <IconLabel icon={icon} label="" weight={isSelected ? 'bold' : undefined} />
-                      </Row>
-                      <Tooltip placement="right">{label}</Tooltip>
-                    </TooltipTrigger>
-                  ) : (
-                    <Row
-                      alignItems="center"
-                      hover={{ backgroundColor: 'surface-sunken' }}
-                      backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                      borderRadius
-                      minHeight="40px"
-                    >
-                      <IconLabel
-                        icon={icon}
-                        label={label}
-                        weight={isSelected ? 'bold' : undefined}
-                        padding
-                      />
-                    </Row>
-                  )}
-                </Link>
-              );
-            })}
-          </Column>
+          <SidebarSection
+            key={`${sectionLabel}${index}`}
+            label={collapsed ? undefined : sectionLabel}
+          >
+            {sectionItems.map(({ id, path, label, icon }) => (
+              <SidebarLink
+                key={id}
+                href={path}
+                label={label}
+                icon={icon}
+                selected={selectedKey === id}
+                collapsed={collapsed}
+                onClick={onItemClick}
+              />
+            ))}
+          </SidebarSection>
         ))}
       </Column>
       <Column

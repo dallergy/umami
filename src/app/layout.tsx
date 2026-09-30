@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Suspense } from 'react';
 import { getBaseUrl } from '@/lib/get-base-url';
@@ -7,10 +7,16 @@ import { Providers } from './Providers';
 import '@umami/react-zen/styles.full.css';
 import './global.css';
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-geist-mono',
 });
 
 export default function ({ children }) {
@@ -23,7 +29,10 @@ export default function ({ children }) {
   }
 
   return (
-    <html lang="en" className={`${inter.className} ${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${geistSans.className}`}
+    >
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -33,10 +42,10 @@ export default function ({ children }) {
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#2f2f2f" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
         <meta name="robots" content="noindex,nofollow" />
       </head>
-      <body>
+      <body className="antialiased">
         <Suspense>
           <Providers>{children}</Providers>
         </Suspense>

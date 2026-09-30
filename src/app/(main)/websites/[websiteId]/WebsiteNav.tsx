@@ -1,8 +1,6 @@
-import { Column, Row, Text, Tooltip, TooltipTrigger } from '@umami/react-zen';
-import { IconLabel } from '@/components/common/IconLabel';
-import Link from '@/components/common/Link';
 import { useMessages, useNavigation, useWebsiteNavItems } from '@/components/hooks';
 import { ArrowLeft } from '@/components/icons';
+import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
 
 export function WebsiteNav({
   websiteId,
@@ -18,85 +16,32 @@ export function WebsiteNav({
   const { items, selectedKey } = useWebsiteNavItems(websiteId);
 
   return (
-    <Column gap="2" marginTop={isCollapsed ? '2' : undefined}>
-      <Link href={renderUrl('/websites', false)} role="button" onClick={onItemClick}>
-        {isCollapsed ? (
-          <TooltipTrigger delay={0}>
-            <Row
-              tabIndex={0}
-              alignItems="center"
-              justifyContent="center"
-              hover={{ backgroundColor: 'surface-sunken' }}
-              borderRadius
-              minHeight="9"
-            >
-              <IconLabel icon={<ArrowLeft />} label="" padding />
-            </Row>
-            <Tooltip placement="right">{t(labels.back)}</Tooltip>
-          </TooltipTrigger>
-        ) : (
-          <Row
-            alignItems="center"
-            hover={{ backgroundColor: 'surface-sunken' }}
-            borderRadius
-            minHeight="9"
-          >
-            <IconLabel icon={<ArrowLeft />} label={t(labels.back)} padding />
-          </Row>
-        )}
-      </Link>
+    <div className="flex flex-col gap-1">
+      <SidebarLink
+        href={renderUrl('/websites', false)}
+        label={t(labels.back)}
+        icon={<ArrowLeft />}
+        collapsed={isCollapsed}
+        onClick={onItemClick}
+      />
       {items.map(({ label: sectionLabel, items: sectionItems }, index) => (
-        <Column key={`${sectionLabel}${index}`} gap="1" marginBottom="1">
-          {!isCollapsed && (
-            <Row paddingX="3" marginTop="2">
-              <Text weight="bold">{sectionLabel}</Text>
-            </Row>
-          )}
-          {sectionItems.map(({ id, path, label, icon }) => {
-            const isSelected = selectedKey === id;
-            return (
-              <Link key={id} href={path} role="button" onClick={onItemClick}>
-                {isCollapsed ? (
-                  <TooltipTrigger delay={0}>
-                    <Row
-                      tabIndex={0}
-                      alignItems="center"
-                      justifyContent="center"
-                      hover={{ backgroundColor: 'surface-sunken' }}
-                      backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                      borderRadius
-                      minHeight="9"
-                    >
-                      <IconLabel
-                        icon={icon}
-                        label=""
-                        weight={isSelected ? 'bold' : undefined}
-                        padding
-                      />
-                    </Row>
-                    <Tooltip placement="right">{label}</Tooltip>
-                  </TooltipTrigger>
-                ) : (
-                  <Row
-                    alignItems="center"
-                    hover={{ backgroundColor: 'surface-sunken' }}
-                    backgroundColor={isSelected ? 'surface-sunken' : undefined}
-                    borderRadius
-                    minHeight="9"
-                  >
-                    <IconLabel
-                      icon={icon}
-                      label={label}
-                      weight={isSelected ? 'bold' : undefined}
-                      padding
-                    />
-                  </Row>
-                )}
-              </Link>
-            );
-          })}
-        </Column>
+        <SidebarSection
+          key={`${sectionLabel}${index}`}
+          label={isCollapsed ? undefined : sectionLabel}
+        >
+          {sectionItems.map(({ id, path, label, icon }) => (
+            <SidebarLink
+              key={id}
+              href={path}
+              label={label}
+              icon={icon}
+              selected={selectedKey === id}
+              collapsed={isCollapsed}
+              onClick={onItemClick}
+            />
+          ))}
+        </SidebarSection>
       ))}
-    </Column>
+    </div>
   );
 }
