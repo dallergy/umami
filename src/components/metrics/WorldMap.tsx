@@ -1,4 +1,4 @@
-import { Box, Column, type ColumnProps, FloatingTooltip, Text, useTheme } from '@umami/react-zen';
+import { Box, Column, type ColumnProps, FloatingTooltip, useTheme } from '@umami/react-zen';
 import { colord } from 'colord';
 import { useMemo, useState } from 'react';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
@@ -16,9 +16,10 @@ import { formatLongNumber } from '@/lib/format';
 export interface WorldMapProps extends ColumnProps {
   websiteId?: string;
   data?: any[];
+  mapHeight?: number;
 }
 
-export function WorldMap({ websiteId, data, ...props }: WorldMapProps) {
+export function WorldMap({ websiteId, data, mapHeight = 600, ...props }: WorldMapProps) {
   const [tooltip, setTooltipPopup] = useState();
   const { theme } = useTheme();
   const { colors } = getThemeColors(theme);
@@ -71,7 +72,7 @@ export function WorldMap({ websiteId, data, ...props }: WorldMapProps) {
       data-for="world-map-tooltip"
       style={{ margin: 'auto 0', overflow: 'hidden' }}
     >
-      <ComposableMap projection="geoMercator">
+      <ComposableMap projection="geoMercator" height={mapHeight} width={800}>
         <ZoomableGroup zoom={0.8} minZoom={0.7} center={[0, 40]}>
           <Geographies geography={`${process.env.basePath || ''}${MAP_FILE}`}>
             {({ geographies }) => {
