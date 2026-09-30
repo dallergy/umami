@@ -14,18 +14,24 @@ import { PageviewsChart } from '@/components/metrics/PageviewsChart';
 import { type AnnotationRange, getAnnotationDateRangeValue } from '@/lib/annotations';
 import { DATE_FUNCTIONS } from '@/lib/date';
 
+export type ChartFocus = 'visitors' | 'views';
+
 export function WebsiteChart({
   websiteId,
   compareMode,
   showAnnotations,
   onAnnotationMoreClick,
   legendActions,
+  focus,
+  chartHeight,
 }: {
   websiteId: string;
   compareMode?: boolean;
   showAnnotations?: boolean;
   onAnnotationMoreClick?: (range: AnnotationRange) => void;
   legendActions?: ReactNode;
+  focus?: ChartFocus;
+  chartHeight?: string;
 }) {
   const { timezone, localFromUtc, localToUtc } = useTimezone();
   const { dateRange, dateCompare } = useDateRange({ timezone: timezone });
@@ -141,6 +147,8 @@ export function WebsiteChart({
         minDate={startDate}
         maxDate={endDate}
         unit={unit}
+        focus={focus}
+        height={chartHeight}
         annotations={annotations}
         onAnnotationClick={handleAnnotationClick}
         onAnnotationMoreClick={onAnnotationMoreClick ? handleAnnotationMoreClick : undefined}

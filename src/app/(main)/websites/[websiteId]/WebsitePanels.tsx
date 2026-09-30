@@ -1,119 +1,118 @@
-import { Grid, Heading, Row, Tab, TabList, TabPanel, Tabs } from '@umami/react-zen';
-import { GridRow } from '@/components/common/GridRow';
+'use client';
+import { Map as MapIcon } from 'lucide-react';
+import { useState } from 'react';
+import { LinkButton } from '@/components/common/LinkButton';
 import { Panel } from '@/components/common/Panel';
-import { useMessages, useMobile } from '@/components/hooks';
-import { MetricsTable } from '@/components/metrics/MetricsTable';
+import { useMessages, useNavigation } from '@/components/hooks';
+import { BreakdownCard, BreakdownList, DimensionSwitch } from '@/components/metrics/BreakdownCard';
 import { WeeklyTraffic } from '@/components/metrics/WeeklyTraffic';
 import { WorldMap } from '@/components/metrics/WorldMap';
+import { cn } from '@/lib/cn';
 
 export function WebsitePanels({ websiteId }: { websiteId: string }) {
   const { t, labels } = useMessages();
-  const tableProps = {
-    websiteId,
-    limit: 10,
-    allowDownload: false,
-    showMore: true,
-    metric: t(labels.visitors),
-  };
-  const rowProps = { minHeight: '570px' };
-  const { isMobile } = useMobile();
 
   return (
-    <Grid gap="3">
-      <GridRow layout="two" {...rowProps}>
-        <Panel>
-          <Heading size="2xl">{t(labels.pages)}</Heading>
-          <Tabs>
-            <TabList>
-              <Tab id="path">{t(labels.path)}</Tab>
-              <Tab id="fullPath">{t(labels.url)}</Tab>
-              <Tab id="entry">{t(labels.entry)}</Tab>
-              <Tab id="exit">{t(labels.exit)}</Tab>
-            </TabList>
-            <TabPanel id="path">
-              <MetricsTable type="path" title={t(labels.path)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="fullPath">
-              <MetricsTable type="fullPath" title={t(labels.url)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="entry">
-              <MetricsTable type="entry" title={t(labels.path)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="exit">
-              <MetricsTable type="exit" title={t(labels.path)} {...tableProps} />
-            </TabPanel>
-          </Tabs>
-        </Panel>
-        <Panel>
-          <Heading size="2xl">{t(labels.sources)}</Heading>
-          <Tabs>
-            <TabList>
-              <Tab id="referrer">{t(labels.referrers)}</Tab>
-              <Tab id="channel">{t(labels.channels)}</Tab>
-            </TabList>
-            <TabPanel id="referrer">
-              <MetricsTable type="referrer" title={t(labels.referrer)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="channel">
-              <MetricsTable type="channel" title={t(labels.channel)} {...tableProps} />
-            </TabPanel>
-          </Tabs>
-        </Panel>
-      </GridRow>
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <BreakdownCard
+        title={t(labels.pages)}
+        websiteId={websiteId}
+        options={[
+          { type: 'path', label: t(labels.path) },
+          { type: 'entry', label: t(labels.entry) },
+          { type: 'exit', label: t(labels.exit) },
+          { type: 'title', label: t(labels.title) },
+          { type: 'fullPath', label: t(labels.url) },
+        ]}
+      />
+      <BreakdownCard
+        title={t(labels.sources)}
+        websiteId={websiteId}
+        options={[
+          { type: 'referrer', label: t(labels.referrers) },
+          { type: 'channel', label: t(labels.channels) },
+          { type: 'utmCampaign', label: t(labels.campaigns) },
+          { type: 'utmSource', label: t(labels.utmSource) },
+          { type: 'utmMedium', label: t(labels.utmMedium) },
+        ]}
+      />
+      <LocationCard websiteId={websiteId} />
+      <BreakdownCard
+        title={t(labels.environment)}
+        websiteId={websiteId}
+        options={[
+          { type: 'browser', label: t(labels.browsers) },
+          { type: 'os', label: t(labels.os) },
+          { type: 'device', label: t(labels.devices) },
+          { type: 'screen', label: t(labels.screens) },
+          { type: 'language', label: t(labels.languages) },
+        ]}
+      />
+      <BreakdownCard
+        title={t(labels.events)}
+        websiteId={websiteId}
+        options={[{ type: 'event', label: t(labels.events) }]}
+      />
+      <Panel paddingY="3" paddingX="4" className="gap-3 lg:col-span-2">
+        <h2 className="text-sm font-semibold tracking-tight">{t(labels.traffic)}</h2>
+        <WeeklyTraffic websiteId={websiteId} />
+      </Panel>
+    </div>
+  );
+}
 
-      <GridRow layout="two" {...rowProps}>
-        <Panel>
-          <Heading size="2xl">{t(labels.environment)}</Heading>
-          <Tabs>
-            <TabList>
-              <Tab id="browser">{t(labels.browsers)}</Tab>
-              <Tab id="os">{t(labels.os)}</Tab>
-              <Tab id="device">{t(labels.devices)}</Tab>
-            </TabList>
-            <TabPanel id="browser">
-              <MetricsTable type="browser" title={t(labels.browser)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="os">
-              <MetricsTable type="os" title={t(labels.os)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="device">
-              <MetricsTable type="device" title={t(labels.device)} {...tableProps} />
-            </TabPanel>
-          </Tabs>
-        </Panel>
+function LocationCard({ websiteId }: { websiteId: string }) {
+  const { t, labels } = useMessages();
+  const { updateParams } = useNavigation();
+  const [type, setType] = useState('country');
+  const [showMap, setShowMap] = useState(true);
+  const options = [
+    { type: 'country', label: t(labels.countries) },
+    { type: 'region', label: t(labels.regions) },
+    { type: 'city', label: t(labels.cities) },
+  ];
+  const mapOpen = showMap && type === 'country';
 
-        <Panel>
-          <Heading size="2xl">{t(labels.location)}</Heading>
-          <Tabs>
-            <TabList>
-              <Tab id="country">{t(labels.countries)}</Tab>
-              <Tab id="region">{t(labels.regions)}</Tab>
-              <Tab id="city">{t(labels.cities)}</Tab>
-            </TabList>
-            <TabPanel id="country">
-              <MetricsTable type="country" title={t(labels.country)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="region">
-              <MetricsTable type="region" title={t(labels.region)} {...tableProps} />
-            </TabPanel>
-            <TabPanel id="city">
-              <MetricsTable type="city" title={t(labels.city)} {...tableProps} />
-            </TabPanel>
-          </Tabs>
-        </Panel>
-      </GridRow>
-
-      <GridRow layout="two-one" {...rowProps}>
-        <Panel paddingX="0" paddingY="0" style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
-          <WorldMap websiteId={websiteId} />
-        </Panel>
-
-        <Panel>
-          <Heading size="2xl">{t(labels.traffic)}</Heading>
-          <Row border="bottom" marginBottom="4" />
-          <WeeklyTraffic websiteId={websiteId} />
-        </Panel>
-      </GridRow>
-    </Grid>
+  return (
+    <Panel paddingY="3" paddingX="4" className="gap-3 lg:col-span-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold tracking-tight">{t(labels.location)}</h2>
+        <div className="flex items-center gap-2">
+          <DimensionSwitch
+            label={t(labels.location)}
+            value={type}
+            options={options}
+            onChange={setType}
+          />
+          {type === 'country' && (
+            <button
+              type="button"
+              aria-pressed={showMap}
+              aria-label={t(labels.countries)}
+              onClick={() => setShowMap(open => !open)}
+              className={cn(
+                'inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground',
+                showMap && 'bg-muted text-foreground',
+              )}
+            >
+              <MapIcon className="size-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+      <div className={mapOpen ? 'grid items-start gap-3 lg:grid-cols-2' : undefined}>
+        {mapOpen && (
+          <div className="overflow-hidden rounded-lg border border-border bg-muted/30">
+            <WorldMap websiteId={websiteId} mapHeight={240} />
+          </div>
+        )}
+        <BreakdownList websiteId={websiteId} type={type} limit={8} />
+      </div>
+      <div className="flex justify-end">
+        <LinkButton href={updateParams({ view: type })} variant="quiet">
+          <span className="text-xs text-muted-foreground">{t(labels.more)}</span>
+        </LinkButton>
+      </div>
+    </Panel>
   );
 }
