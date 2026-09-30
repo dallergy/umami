@@ -88,7 +88,7 @@ Umami provides Docker images as well as a Docker compose file for easy deploymen
 Docker image:
 
 ```bash
-docker pull docker.umami.is/umami-software/umami:latest
+docker pull shounak6942/umami:latest
 ```
 
 Docker compose (Runs Umami with a PostgreSQL database):
