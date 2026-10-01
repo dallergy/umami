@@ -1,10 +1,8 @@
 'use client';
-import { Icon, Row, Text } from '@umami/react-zen';
 import { useShare } from '@/components/hooks';
 import { Logo } from '@/components/svg';
 
-const LOGO_SIZE = { sm: 24, md: 32, lg: 40 };
-const TEXT_SIZE = { sm: 'sm', md: 'base', lg: 'lg' } as const;
+const LOGO_SIZE = { sm: 20, md: 24, lg: 32 };
 
 export function ShareBranding({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const share = useShare();
@@ -14,19 +12,24 @@ export function ShareBranding({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const height = LOGO_SIZE[size];
 
   return (
-    <a href={logoDomain} target="_blank" rel="noopener" style={{ marginLeft: 12 }}>
-      <Row alignItems="center" gap>
-        {logoImage ? (
-          <img src={logoImage} alt={logoName} style={{ height }} />
-        ) : (
-          <Icon>
-            <Logo />
-          </Icon>
-        )}
-        <Text size={TEXT_SIZE[size]} weight="bold">
-          {logoName}
-        </Text>
-      </Row>
+    <a
+      href={logoDomain}
+      target="_blank"
+      rel="noopener"
+      className="flex shrink-0 items-center gap-2 rounded-md text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {logoImage ? (
+        <img src={logoImage} alt={logoName} style={{ height }} />
+      ) : (
+        <Logo style={{ width: height, height }} />
+      )}
+      <span
+        className={
+          size === 'sm' ? 'text-sm font-semibold' : 'text-[15px] font-semibold tracking-tight'
+        }
+      >
+        {logoName}
+      </span>
     </a>
   );
 }

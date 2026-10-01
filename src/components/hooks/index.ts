@@ -110,6 +110,7 @@ export * from './useFilters';
 export * from './useForceUpdate';
 export * from './useFormat';
 export * from './useGlobalState';
+export * from './useKeyboardShortcuts';
 export * from './useLanguageNames';
 export * from './useLocale';
 export * from './useMessages';

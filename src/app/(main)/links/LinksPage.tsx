@@ -22,7 +22,7 @@ export function LinksPage() {
 
   return (
     <PageBody>
-      <Column gap="6" margin="2">
+      <Column gap="3">
         <PageHeader title={t(labels.links)}>
           {showActions && <LinkAddButton teamId={teamId} />}
         </PageHeader>

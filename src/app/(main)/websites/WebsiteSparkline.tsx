@@ -1,77 +1,89 @@
-import { useTheme } from '@umami/react-zen';
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { useMessages } from '@/components/hooks';
-import { getThemeColors } from '@/lib/colors';
+import { cn } from '@/lib/cn';
 
+const WIDTH = 120;
+const HEIGHT = 32;
+
+/**
+ * A tiny SVG area chart. Plain SVG keeps list pages cheap: no canvas, no chart
+ * instance and no resize observers per row.
+ */
 export function WebsiteSparkline({
   values = [],
   total = 0,
   isLoading = false,
+  variant = 'line',
+  className,
 }: {
   values?: number[];
   total?: number;
   isLoading?: boolean;
+  variant?: 'line' | 'area';
+  className?: string;
 }) {
-  const { theme } = useTheme();
   const { t, labels } = useMessages();
-  const { colors } = useMemo(() => getThemeColors(theme), [theme]);
+  // React ids contain characters that are awkward inside url(#…) references.
+  const gradientId = `spark-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const tooltipLabel = `${total.toLocaleString()} ${t(labels.visitors).toLocaleLowerCase()}`;
 
-  const points = useMemo(() => {
+  const { line, area } = useMemo(() => {
     if (!values.length) {
-      return '';
+      return { line: '', area: '' };
     }
 
-    const width = 96;
-    const height = 24;
+    const max = Math.max(...values, 1);
     const padding = 2;
-    const max = Math.max(...values, 0);
-    const min = Math.min(...values, 0);
-    const range = max - min || 1;
+    const points = values.map((value, index) => {
+      const x = values.length === 1 ? WIDTH / 2 : (index / (values.length - 1)) * WIDTH;
+      const y = HEIGHT - padding - (value / max) * (HEIGHT - padding * 2);
 
-    return values
-      .map((value, index) => {
-        const x = values.length === 1 ? width / 2 : (index / (values.length - 1)) * width;
-        const y =
-          height - padding - ((value - min) / range) * Math.max(height - padding * 2, 1);
+      return [x, y];
+    });
 
-        return `${x},${y}`;
-      })
+    const path = points
+      .map(([x, y], index) => `${index ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`)
       .join(' ');
+
+    return { line: path, area: `${path} L${WIDTH},${HEIGHT} L0,${HEIGHT} Z` };
   }, [values]);
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 88,
-          height: 24,
-          borderRadius: 9999,
-          background: 'var(--zen-surface-sunken)',
-        }}
-      />
+      <div className={cn('h-6 w-full max-w-22 animate-pulse rounded-full bg-muted', className)} />
     );
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: 88, cursor: 'default' }} title={tooltipLabel}>
+    <div className={cn('w-full', variant === 'line' && 'max-w-22', className)} title={tooltipLabel}>
       <svg
         width="100%"
-        height="24"
-        viewBox="0 0 96 24"
+        height="100%"
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         preserveAspectRatio="none"
         role="img"
         aria-label={tooltipLabel}
-        style={{ display: 'block' }}
+        className="block h-full min-h-6 overflow-visible text-[var(--chart-line)]"
       >
-        <polyline
-          points={points}
+        {variant === 'area' && (
+          <>
+            <defs>
+              <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={area} fill={`url(#${gradientId})`} />
+          </>
+        )}
+        <path
+          d={line}
           fill="none"
-          stroke={colors.chart.visitors.borderColor}
-          strokeWidth="2"
+          stroke="currentColor"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
         />
       </svg>
     </div>

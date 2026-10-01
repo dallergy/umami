@@ -43,12 +43,12 @@ export function Panel({
   return (
     <Column
       data-panel=""
-      paddingY="6"
-      paddingX={{ base: '3', md: '6' }}
+      paddingY="5"
+      paddingX={{ base: '4', md: '5' }}
       position="relative"
       gap
       className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground shadow-xs',
+        'rounded-lg border border-border bg-card text-card-foreground shadow-card',
         className,
       )}
       {...props}

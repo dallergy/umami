@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import { Logo } from '@/components/svg';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AuthFrame({
-  title = 'umami',
+  title,
   description,
   children,
 }: {
@@ -12,17 +11,20 @@ export function AuthFrame({
   children: ReactNode;
 }) {
   return (
-    <Card className="w-full max-w-sm gap-5 border-border py-8 shadow-sm">
-      <CardHeader className="items-center gap-3 text-center">
-        <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-background text-primary shadow-xs">
-          <Logo className="size-5" />
-        </div>
-        <div className="space-y-1">
-          <CardTitle className="text-xl tracking-tight">{title}</CardTitle>
-          {description ? <CardDescription>{description}</CardDescription> : null}
-        </div>
-      </CardHeader>
-      <CardContent className="grid gap-4">{children}</CardContent>
-    </Card>
+    <div className="flex w-full max-w-[360px] flex-col items-center gap-6">
+      <div className="flex items-center gap-2.5 text-foreground">
+        <Logo className="size-8" />
+        <span className="text-xl font-semibold tracking-tight">umami</span>
+      </div>
+      <div className="w-full rounded-xl border border-border bg-card p-6 text-card-foreground shadow-card sm:p-7">
+        {(title || description) && (
+          <div className="mb-5 flex flex-col gap-1 text-center">
+            {title && <h1 className="text-base font-semibold tracking-tight">{title}</h1>}
+            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          </div>
+        )}
+        <div className="grid gap-4">{children}</div>
+      </div>
+    </div>
   );
 }

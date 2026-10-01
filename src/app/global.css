@@ -1,13 +1,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/*
+ * React Zen ships prebuilt responsive display classes (e.g. "hidden md:flex"). This app's own
+ * build emits ".hidden"/".flex" later in the same layer, which would silently override them.
+ * Re-emitting the responsive display variants here keeps them after the base utilities.
+ */
+@source inline("{sm:,md:,lg:,xl:,}{flex,grid,block,inline-flex,inline-block,hidden,contents}");
+
 @custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-canvas: var(--background);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -18,12 +26,19 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-bar: var(--bar);
+  --color-bar-hover: var(--bar-hover);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-live: var(--live);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -32,48 +47,64 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --radius-xs: calc(var(--radius) * 0.5);
-  --radius-sm: calc(var(--radius) * 0.75);
-  --radius-md: calc(var(--radius) * 0.875);
+  --radius-xs: calc(var(--radius) * 0.4);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --shadow-card: var(--card-shadow);
+  --shadow-pop: var(--pop-shadow);
 }
 
+/*
+ * Light theme: a calm gray canvas, white report cards, and a single indigo
+ * accent for data. Everything else stays neutral so the numbers stand out.
+ */
 :root {
-  --zen-font-family: var(--font-geist-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
+  --zen-font-family: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --radius: 0.625rem;
-  --background: oklch(0.985 0.001 286.375);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.546 0.215 262.881);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.546 0.215 262.881);
-  --sidebar: oklch(0.985 0.001 286.375);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.546 0.215 262.881);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.546 0.215 262.881);
+  --background: #f6f7f9;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f6;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f3f6;
+  --muted-foreground: #64748b;
+  --subtle-foreground: #94a3b8;
+  --accent: #f1f3f6;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #e6e8ec;
+  --border-strong: #d5d9e0;
+  --input: #dfe3e8;
+  --ring: #6366f1;
+  --bar: #eef0ff;
+  --bar-hover: #e2e5ff;
+  --positive: #059669;
+  --negative: #dc2626;
+  --live: #10b981;
+  --chart-line: #6366f1;
+  --card-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 1px rgb(15 23 42 / 0.02);
+  --pop-shadow: 0 12px 32px -12px rgb(15 23 42 / 0.25), 0 2px 6px -2px rgb(15 23 42 / 0.08);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #4f46e5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f3f6;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e6e8ec;
+  --sidebar-ring: #6366f1;
 }
 
 :root,
 [data-theme="light"] {
-  --zen-radius: 0.625rem;
-  --zen-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --zen-radius: 0.5rem;
+  --zen-shadow: var(--card-shadow);
   --zen-primary: var(--primary);
   --zen-primary-fg: var(--primary-foreground);
   --zen-surface: var(--card);
@@ -84,6 +115,7 @@
   --zen-fg-muted: var(--muted-foreground);
   --zen-border: var(--border);
   --zen-border-muted: var(--border);
+  --zen-border-strong: var(--border-strong);
   --zen-focus-ring: var(--ring);
   --zen-focus-offset: var(--background);
 }
@@ -91,33 +123,44 @@
 [data-theme="dark"],
 .dark {
   color-scheme: dark;
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.623 0.214 259.815);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.17 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.623 0.214 259.815);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-  --zen-radius: 0.625rem;
+  --background: #0c0e13;
+  --foreground: #e7e9ee;
+  --card: #14171e;
+  --card-foreground: #e7e9ee;
+  --popover: #181b23;
+  --popover-foreground: #e7e9ee;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #1d2029;
+  --secondary-foreground: #e7e9ee;
+  --muted: #1d2029;
+  --muted-foreground: #8d94a3;
+  --subtle-foreground: #5e6574;
+  --accent: #1d2029;
+  --accent-foreground: #f1f3f6;
+  --destructive: #f87171;
+  --border: rgb(255 255 255 / 0.07);
+  --border-strong: rgb(255 255 255 / 0.12);
+  --input: rgb(255 255 255 / 0.1);
+  --ring: #818cf8;
+  --bar: rgb(129 140 248 / 0.13);
+  --bar-hover: rgb(129 140 248 / 0.2);
+  --positive: #34d399;
+  --negative: #f87171;
+  --live: #34d399;
+  --chart-line: #818cf8;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --pop-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --sidebar: #14171e;
+  --sidebar-foreground: #e7e9ee;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1d2029;
+  --sidebar-accent-foreground: #f1f3f6;
+  --sidebar-border: rgb(255 255 255 / 0.07);
+  --sidebar-ring: #818cf8;
+  --zen-radius: 0.5rem;
+  --zen-shadow: var(--card-shadow);
   --zen-primary: var(--primary);
   --zen-primary-fg: var(--primary-foreground);
   --zen-surface: var(--card);
@@ -128,12 +171,23 @@
   --zen-fg-muted: var(--muted-foreground);
   --zen-border: var(--border);
   --zen-border-muted: var(--border);
+  --zen-border-strong: var(--border-strong);
   --zen-focus-ring: var(--ring);
   --zen-focus-offset: var(--background);
 }
 
+@layer base {
+  /* Tailwind v4 defaults borders to currentColor; use the theme's hairline instead. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+}
+
 html {
   font-size: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
@@ -147,10 +201,23 @@ body {
 
 body {
   font-size: 0.875rem;
+  line-height: 1.45;
+  font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 html[style*="padding-right"] {
   padding-right: 0 !important;
+}
+
+/* Keep keyboard focus obvious but never noisy for mouse users. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 [data-slot="button"],
@@ -158,7 +225,7 @@ html[style*="padding-right"] {
 [data-slot="input"],
 [data-slot="input-group"],
 [data-slot="textarea"] {
-  border-radius: calc(var(--radius) * 0.875);
+  border-radius: calc(var(--radius) * 0.8);
 }
 
 [data-slot="dialog"],
@@ -166,19 +233,19 @@ html[style*="padding-right"] {
 [data-slot="popover"] {
   border-color: var(--border);
   border-radius: var(--radius);
-  box-shadow:
-    0 10px 24px -16px rgb(0 0 0 / 0.35),
-    0 1px 2px rgb(0 0 0 / 0.06);
+  box-shadow: var(--pop-shadow);
 }
 
 [data-slot="menu-item"] {
-  border-radius: calc(var(--radius) * 0.75);
+  border-radius: calc(var(--radius) * 0.6);
 }
 
 [data-slot="table-header-row"] {
   color: var(--muted-foreground);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 [data-slot="table-row"] {
@@ -186,14 +253,67 @@ html[style*="padding-right"] {
 }
 
 [data-slot="table-row"]:hover {
-  background-color: color-mix(in oklch, var(--accent) 80%, transparent);
+  background-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 [data-panel] h2 {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
+}
+
+/* Hide scrollbars on horizontally scrolling tab strips while keeping them scrollable. */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soft edge fade for horizontally scrolling nav on small screens. */
+.fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 24px),
+    transparent
+  );
+}
+
+@keyframes live-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/*
+ * A few pulses when the value changes, then idle. An infinite animation would keep the
+ * compositor producing frames (and waking the CPU/GPU) for as long as the tab is open.
+ */
+.live-ping {
+  animation: live-ping 2s cubic-bezier(0, 0, 0.2, 1) 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-ping {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 input:is(:-webkit-autofill, :autofill),

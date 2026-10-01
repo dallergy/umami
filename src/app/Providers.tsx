@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useLocale } from '@/components/hooks';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import enUS from '../../public/intl/messages/en-US.json';
 import 'chartjs-adapter-date-fns';
 
 const client = new QueryClient({
@@ -18,6 +19,14 @@ const client = new QueryClient({
   },
 });
 
+// Untranslated keys fall back to English instead of rendering raw message ids.
+function getMessageFallback({ namespace, key }: { namespace?: string; key: string }) {
+  const path = (namespace ? `${namespace}.${key}` : key).split('.');
+  const value = path.reduce<any>((node, part) => node?.[part], enUS);
+
+  return typeof value === 'string' ? value : path.join('.');
+}
+
 function MessagesProvider({ children }) {
   const { locale, messages, dir } = useLocale();
 
@@ -27,7 +36,12 @@ function MessagesProvider({ children }) {
   }, [locale, dir]);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages[locale]} onError={() => null}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages[locale]}
+      onError={() => null}
+      getMessageFallback={getMessageFallback}
+    >
       {children}
     </NextIntlClientProvider>
   );

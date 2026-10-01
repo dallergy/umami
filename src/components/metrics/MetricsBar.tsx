@@ -7,7 +7,7 @@ export interface MetricsBarProps extends GridProps {
 
 export function MetricsBar({ children, ...props }: MetricsBarProps) {
   return (
-    <Grid className="gap-4" columns="repeat(auto-fit, minmax(180px, 1fr))" {...props}>
+    <Grid className="gap-3" columns="repeat(auto-fit, minmax(160px, 1fr))" {...props}>
       {children}
     </Grid>
   );

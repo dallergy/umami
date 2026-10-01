@@ -1,4 +1,3 @@
-import { TrendingDown, TrendingUp } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
@@ -23,14 +22,21 @@ export function ChangeLabel({
     <span
       title={title}
       className={cn(
-        'inline-flex items-center gap-1 self-start rounded-md px-1.5 py-0.5 text-xs font-medium tabular-nums',
-        neutral && 'bg-muted text-muted-foreground',
-        !neutral && good && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-        !neutral && !good && 'bg-red-500/10 text-red-700 dark:text-red-300',
+        'inline-flex items-center gap-0.5 self-start text-xs font-semibold tabular-nums',
+        neutral && 'font-medium text-muted-foreground',
+        !neutral && good && 'text-positive',
+        !neutral && !good && 'text-negative',
       )}
     >
-      {!neutral &&
-        (positive ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />)}
+      {!neutral && (
+        <svg
+          viewBox="0 0 10 10"
+          aria-hidden
+          className={cn('size-2.5 shrink-0', !positive && 'rotate-180')}
+        >
+          <path d="M5 1.5 9 7.5H1z" fill="currentColor" />
+        </svg>
+      )}
       <span>{children || value}</span>
     </span>
   );

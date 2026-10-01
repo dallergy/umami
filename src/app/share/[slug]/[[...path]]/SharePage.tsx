@@ -1,7 +1,7 @@
 'use client';
-import { Column, Grid, Row, useTheme } from '@umami/react-zen';
+import { Column, useTheme } from '@umami/react-zen';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { BoardViewPage } from '@/app/(main)/boards/[boardId]/BoardViewPage';
 import { LinkPage } from '@/app/(main)/links/[linkId]/LinkPage';
 import { PixelPage } from '@/app/(main)/pixels/[pixelId]/PixelPage';
@@ -23,9 +23,10 @@ import { WebsitePage } from '@/app/(main)/websites/[websiteId]/WebsitePage';
 import { WebsiteProvider } from '@/app/(main)/websites/WebsiteProvider';
 import { PageBody } from '@/components/common/PageBody';
 import { useShare } from '@/components/hooks';
-import { MobileMenuButton } from '@/components/input/MobileMenuButton';
+import { BreadcrumbSlash } from '@/components/nav/BreadcrumbSlash';
 import { ENTITY_TYPE } from '@/lib/constants';
 import { getShareTheme } from '@/lib/share';
+import { ShareBranding } from './ShareBranding';
 import { ShareFooter } from './ShareFooter';
 import { ShareNav } from './ShareNav';
 
@@ -60,14 +61,6 @@ function getSharePath(pathname: string) {
 }
 
 export function SharePage() {
-  const [navCollapsed, setNavCollapsed] = useState(
-    () => typeof window !== 'undefined' && localStorage.getItem('share:navCollapsed') === 'true',
-  );
-
-  const handleCollapse = (value: boolean) => {
-    localStorage.setItem('share:navCollapsed', String(value));
-    setNavCollapsed(value);
-  };
   const share = useShare();
   const { initTheme } = useTheme();
   const router = useRouter();
@@ -119,25 +112,25 @@ export function SharePage() {
   const PageComponent = PAGE_COMPONENTS[pageKey] || WebsitePage;
 
   return (
-    <Grid columns={{ base: '1fr', lg: `${navCollapsed ? '60px' : '240px'} 1fr` }} width="100%">
-      <Row display={{ base: 'flex', lg: 'none' }} alignItems="center" gap padding="3">
-        <MobileMenuButton>
-          {({ close }) => {
-            return <ShareNav onItemClick={close} />;
-          }}
-        </MobileMenuButton>
-      </Row>
-      <Column display={{ base: 'none', lg: 'flex' }} marginRight="2">
-        <ShareNav collapsed={navCollapsed} onCollapse={handleCollapse} />
-      </Column>
-      <PageBody gap>
-        <WebsiteProvider websiteId={websiteId}>
-          <Column>
+    <WebsiteProvider websiteId={websiteId}>
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <header className="border-b border-border bg-card">
+          <div className="mx-auto flex h-14 w-full max-w-[1240px] items-center gap-1 px-4 md:px-6">
+            <ShareBranding />
+            <BreadcrumbSlash />
             <WebsiteHeader showActions={false} allowLink={false} />
+          </div>
+          <div className="mx-auto w-full max-w-[1240px] px-4 md:px-6">
+            <ShareNav />
+          </div>
+        </header>
+        <main className="min-w-0 flex-1 overflow-x-clip">
+          <PageBody>
             <PageComponent websiteId={websiteId} />
-          </Column>
-        </WebsiteProvider>
-      </PageBody>
-    </Grid>
+          </PageBody>
+        </main>
+        <ShareFooter />
+      </div>
+    </WebsiteProvider>
   );
 }

@@ -7,8 +7,9 @@ export function PageHeader({
   description,
   label,
   icon,
-  showBorder = true,
+  showBorder = false,
   titleHref,
+  className,
   children,
 }: {
   title: string;
@@ -22,20 +23,23 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   const heading = (
-    <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+    <h1 className="truncate text-xl font-semibold tracking-tight text-foreground">{title}</h1>
   );
 
   return (
     <header
       className={cn(
-        'mb-6 grid items-center gap-4 py-6 md:grid-cols-[minmax(0,1fr)_auto]',
-        showBorder && 'border-b border-border',
+        'mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-1',
+        showBorder && 'border-b border-border pb-4',
+        className,
       )}
     >
-      <div className="flex min-w-0 flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-1">
         {label}
-        <div className="flex min-w-0 items-center gap-3">
-          {icon ? <span className="text-muted-foreground">{icon}</span> : null}
+        <div className="flex min-w-0 items-center gap-2.5">
+          {icon ? (
+            <span className="flex shrink-0 items-center text-muted-foreground">{icon}</span>
+          ) : null}
           {title && titleHref ? (
             <Link href={titleHref} className="min-w-0 hover:underline">
               {heading}
@@ -45,12 +49,12 @@ export function PageHeader({
           )}
         </div>
         {description ? (
-          <p className="max-w-xl truncate text-sm text-muted-foreground" title={description}>
+          <p className="max-w-2xl truncate text-sm text-muted-foreground" title={description}>
             {description}
           </p>
         ) : null}
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-3">{children}</div>
+      {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
     </header>
   );
 }

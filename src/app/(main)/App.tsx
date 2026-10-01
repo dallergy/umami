@@ -2,9 +2,6 @@
 import { Loading } from '@umami/react-zen';
 import Script from 'next/script';
 import { useEffect } from 'react';
-import { MobileNav } from '@/app/(main)/MobileNav';
-import { SideNav } from '@/app/(main)/SideNav';
-import { TopNav } from '@/app/(main)/TopNav';
 import {
   useConfig,
   useLoginQuery,
@@ -13,6 +10,7 @@ import {
   useTwoFactorStatusQuery,
 } from '@/components/hooks';
 import { TwoFactorSetupModal } from '@/components/modals/TwoFactorSetupModal';
+import { AppHeader } from '@/components/nav/AppHeader';
 import { LAST_TEAM_CONFIG } from '@/lib/constants';
 import { removeItem, setItem } from '@/lib/storage';
 import { UpdateNotice } from './UpdateNotice';
@@ -60,23 +58,15 @@ export function App({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 hidden h-screen shrink-0 lg:flex">
-        <SideNav />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center border-b border-border px-3 py-2 lg:hidden">
-          <MobileNav />
-        </div>
-        <TopNav />
-        <div
-          className="min-w-0 flex-1"
-          aria-hidden={needsTwoFactorSetup || undefined}
-          style={needsTwoFactorSetup ? { pointerEvents: 'none' } : undefined}
-        >
-          {children}
-        </div>
-      </div>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <AppHeader />
+      <main
+        className="min-w-0 flex-1 overflow-x-clip"
+        aria-hidden={needsTwoFactorSetup || undefined}
+        style={needsTwoFactorSetup ? { pointerEvents: 'none' } : undefined}
+      >
+        {children}
+      </main>
       {needsTwoFactorSetup && <TwoFactorSetupModal required={true} />}
       <UpdateNotice user={user} config={config} />
       {process.env.NODE_ENV === 'production' && !pathname.includes('/share/') && (

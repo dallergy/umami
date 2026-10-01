@@ -3,6 +3,7 @@ import ChartJS, {
   type ChartData,
   type ChartOptions,
   type LegendItem,
+  type Plugin,
   type UpdateMode,
 } from 'chart.js/auto';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -15,7 +16,7 @@ import { Legend } from '@/components/metrics/Legend';
 import { getChartBucketIndex } from '@/lib/charts';
 import { DEFAULT_ANIMATION_DURATION } from '@/lib/constants';
 
-ChartJS.defaults.font.family = 'Inter';
+ChartJS.defaults.font.family = "Inter, 'Inter Fallback', ui-sans-serif, system-ui, sans-serif";
 
 export interface ChartProps extends BoxProps {
   type?: 'bar' | 'bubble' | 'doughnut' | 'pie' | 'line' | 'polarArea' | 'radar' | 'scatter';
@@ -30,6 +31,11 @@ export interface ChartProps extends BoxProps {
   annotations?: ChartAnnotation[];
   onAnnotationClick?: (annotations: ChartAnnotation[]) => void;
   onAnnotationMoreClick?: (annotations: ChartAnnotation[]) => void;
+  /** Hide the built-in legend when the caller renders its own. */
+  showLegend?: boolean;
+  /** Extra Chart.js plugins. Read once when the chart instance is created. */
+  plugins?: Plugin[];
+  children?: ReactNode;
 }
 
 function isSameMarkers(a: AnnotationMarker[], b: AnnotationMarker[]) {
@@ -58,6 +64,9 @@ export function Chart({
   annotations,
   onAnnotationClick,
   onAnnotationMoreClick,
+  showLegend = true,
+  plugins,
+  children,
   ...props
 }: ChartProps) {
   const canvas = useRef(null);
@@ -175,7 +184,7 @@ export function Chart({
         type,
         data: chartData,
         options,
-        plugins: [annotationPlugin],
+        plugins: [annotationPlugin, ...(plugins || [])],
       });
 
       setLegendItems(chart.current.legend.legendItems);
@@ -222,20 +231,29 @@ export function Chart({
     chart.current?.update('none');
   }, [annotations]);
 
+  const canvasArea = (
+    <Box {...props}>
+      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+        <canvas ref={canvas} style={{ position: 'absolute', top: 0, left: 0 }} />
+        {markers.length > 0 && (
+          <ChartAnnotationMarkers
+            markers={markers}
+            onClick={onAnnotationClick}
+            onMoreClick={onAnnotationMoreClick}
+          />
+        )}
+      </div>
+      {children}
+    </Box>
+  );
+
+  if (!showLegend) {
+    return canvasArea;
+  }
+
   return (
     <Column gap="6">
-      <Box {...props}>
-        <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-          <canvas ref={canvas} style={{ position: 'absolute', top: 0, left: 0 }} />
-          {markers.length > 0 && (
-            <ChartAnnotationMarkers
-              markers={markers}
-              onClick={onAnnotationClick}
-              onMoreClick={onAnnotationMoreClick}
-            />
-          )}
-        </div>
-      </Box>
+      {canvasArea}
       {legendActions ? (
         <div
           style={{

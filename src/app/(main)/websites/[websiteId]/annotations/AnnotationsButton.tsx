@@ -13,6 +13,7 @@ export function AnnotationsButton({ websiteId }: { websiteId: string }) {
       label={t(labels.notes)}
       title={null}
       variant="quiet"
+      className="h-7 rounded-md px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
       width="800px"
     >
       {({ close }) => (

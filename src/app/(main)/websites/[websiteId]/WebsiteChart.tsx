@@ -1,18 +1,21 @@
 import { isSameDay } from 'date-fns';
 import { type ReactNode, useCallback, useMemo } from 'react';
 import type { ChartAnnotation } from '@/components/charts/ChartAnnotationMarkers';
-import { LoadingPanel } from '@/components/common/LoadingPanel';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import {
   useDateParameters,
   useDateRange,
+  useMessages,
   useNavigation,
   useTimezone,
   useWebsiteAnnotationsQuery,
 } from '@/components/hooks';
 import { useWebsitePageviewsQuery } from '@/components/hooks/queries/useWebsitePageviewsQuery';
-import { PageviewsChart } from '@/components/metrics/PageviewsChart';
+import { TrafficChart, type TrafficSeries } from '@/components/metrics/TrafficChart';
+import { Skeleton } from '@/components/ui/skeleton';
 import { type AnnotationRange, getAnnotationDateRangeValue } from '@/lib/annotations';
-import { DATE_FUNCTIONS } from '@/lib/date';
+import { cn } from '@/lib/cn';
+import { DATE_FUNCTIONS, getDateRangeValue } from '@/lib/date';
 
 export type ChartFocus = 'visitors' | 'views';
 
@@ -23,7 +26,8 @@ export function WebsiteChart({
   onAnnotationMoreClick,
   legendActions,
   focus,
-  chartHeight,
+  chartHeight = '280px',
+  showLegend = true,
 }: {
   websiteId: string;
   compareMode?: boolean;
@@ -32,7 +36,9 @@ export function WebsiteChart({
   legendActions?: ReactNode;
   focus?: ChartFocus;
   chartHeight?: string;
+  showLegend?: boolean;
 }) {
+  const { t, labels } = useMessages();
   const { timezone, localFromUtc, localToUtc } = useTimezone();
   const { dateRange, dateCompare } = useDateRange({ timezone: timezone });
   const { startDate, endDate, unit, value } = dateRange;
@@ -47,34 +53,49 @@ export function WebsiteChart({
     websiteId,
     compare: compareMode ? dateCompare?.compare : undefined,
   });
-  const { pageviews, sessions, compare } = (data || {}) as any;
   const canDrillIntoAnnotation =
     unit !== 'hour' && unit !== 'minute' && !isSameDay(startDate, endDate);
+  const compareLabel =
+    dateCompare?.compare === 'yoy' ? t(labels.previousYear) : t(labels.previousPeriod);
 
-  const chartData = useMemo(() => {
+  const series = useMemo<TrafficSeries[]>(() => {
     if (!data) {
-      return { pageviews: [], sessions: [] };
+      return [];
     }
 
-    return {
-      pageviews,
-      sessions,
-      ...(compare && {
-        compare: {
-          pageviews: pageviews.map(({ x }, i) => ({
-            x,
-            y: compare.pageviews[i]?.y,
-            d: compare.pageviews[i]?.x,
-          })),
-          sessions: sessions.map(({ x }, i) => ({
-            x,
-            y: compare.sessions[i]?.y,
-            d: compare.sessions[i]?.x,
-          })),
-        },
-      }),
+    const { pageviews = [], sessions = [], compare } = data as any;
+
+    const withCompareDates = (current: any[], previous?: any[]) =>
+      previous
+        ? current.map(({ x }, i) => ({ x, y: previous[i]?.y, d: previous[i]?.x }))
+        : undefined;
+
+    const visitors: TrafficSeries = {
+      id: 'visitors',
+      label: t(labels.visitors),
+      data: sessions,
+      compareData: withCompareDates(sessions, compare?.sessions),
+      compareLabel,
     };
-  }, [data, startDate, endDate, unit]);
+
+    const views: TrafficSeries = {
+      id: 'views',
+      label: t(labels.views),
+      data: pageviews,
+      compareData: withCompareDates(pageviews, compare?.pageviews),
+      compareLabel,
+    };
+
+    if (focus === 'views') {
+      return [views];
+    }
+
+    if (focus === 'visitors') {
+      return [visitors];
+    }
+
+    return [visitors, views];
+  }, [data, focus, compareLabel, t, labels]);
 
   const annotations = useMemo<ChartAnnotation[]>(() => {
     const isSubDayUnit = unit === 'hour' || unit === 'minute';
@@ -138,21 +159,62 @@ export function WebsiteChart({
     [localToUtc, onAnnotationMoreClick, unit],
   );
 
+  // Clicking a day (or month) in the graph zooms the whole dashboard into that period.
+  const handleBucketClick = useCallback(
+    (start: Date, end: Date) => {
+      router.push(
+        updateParams({ date: getDateRangeValue(start, end), offset: undefined, unit: undefined }),
+      );
+    },
+    [router, updateParams],
+  );
+
+  const showHeader = showLegend && (series.length > 1 || compareMode || legendActions);
+
   return (
-    <LoadingPanel data={data} isFetching={isFetching} isLoading={isLoading} error={error}>
-      <PageviewsChart
-        key={value}
-        data={chartData}
-        legendActions={legendActions}
-        minDate={startDate}
-        maxDate={endDate}
-        unit={unit}
-        focus={focus}
-        height={chartHeight}
-        annotations={annotations}
-        onAnnotationClick={handleAnnotationClick}
-        onAnnotationMoreClick={onAnnotationMoreClick ? handleAnnotationMoreClick : undefined}
-      />
-    </LoadingPanel>
+    <div className="flex flex-col gap-2">
+      {showHeader && (
+        <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {series.length > 1 &&
+              series.map((item, index) => (
+                <span key={item.id} className="flex items-center gap-1.5">
+                  <span
+                    className={cn('size-2 rounded-full bg-primary', index > 0 && 'opacity-45')}
+                  />
+                  {item.label}
+                </span>
+              ))}
+            {compareMode && (
+              <span className="flex items-center gap-1.5">
+                <span className="h-0 w-3 border-t-[1.5px] border-dashed border-current" />
+                {compareLabel}
+              </span>
+            )}
+          </div>
+          {legendActions && <div className="ml-auto flex items-center gap-1">{legendActions}</div>}
+        </div>
+      )}
+      {error ? (
+        <ErrorMessage />
+      ) : isLoading || !data ? (
+        <Skeleton className="w-full rounded-md" style={{ height: chartHeight }} />
+      ) : (
+        <div className={cn('transition-opacity', isFetching && 'opacity-60')}>
+          <TrafficChart
+            key={value}
+            series={series}
+            unit={unit}
+            minDate={startDate}
+            maxDate={endDate}
+            height={chartHeight}
+            annotations={annotations}
+            onAnnotationClick={handleAnnotationClick}
+            onAnnotationMoreClick={onAnnotationMoreClick ? handleAnnotationMoreClick : undefined}
+            onBucketClick={handleBucketClick}
+          />
+        </div>
+      )}
+    </div>
   );
 }

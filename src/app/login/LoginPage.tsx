@@ -21,7 +21,9 @@ export function LoginPageWrapper({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted px-4 py-12">{children}</div>
+    <div className="flex min-h-svh items-center justify-center bg-background px-4 py-12 [background-image:radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--primary)_9%,transparent),transparent_60%)]">
+      {children}
+    </div>
   );
 }
 

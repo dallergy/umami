@@ -438,6 +438,17 @@ export const labels: Record<string, string> = {
   lastUsed: 'label.last-used',
   never: 'label.never',
   copy: 'label.copy',
+  currentVisitors: 'label.current-visitors',
+  lastMonth: 'label.last-month',
+  keyboardShortcuts: 'label.keyboard-shortcuts',
+  light: 'label.light',
+  dark: 'label.dark',
+  map: 'label.map',
+  next: 'label.next',
+  manageTeams: 'label.manage-teams',
+  toggleTheme: 'label.toggle-theme',
+  navigation: 'label.navigation',
+  peak: 'label.peak',
 };
 
 export const messages: Record<string, string> = {

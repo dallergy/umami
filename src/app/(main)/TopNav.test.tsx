@@ -8,6 +8,7 @@ const mockUseNavigation = vi.fn();
 
 vi.mock('@/components/hooks', () => ({
   useNavigation: () => mockUseNavigation(),
+  useMessages: () => ({ t: (value: string) => value, labels: {} }),
 }));
 
 vi.mock('@/components/input/TeamsButton', () => ({
