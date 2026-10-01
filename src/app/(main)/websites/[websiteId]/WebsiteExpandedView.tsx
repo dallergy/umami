@@ -18,7 +18,7 @@ export function WebsiteExpandedView({
   const {
     query: { view },
   } = useNavigation();
-  const title = view === 'fullPath' ? t(labels.url) : t(labels[view]);
+  const title = view === 'fullPath' ? t(labels.url) : labels[view] ? t(labels[view]) : '';
 
   return (
     <Column height="100%" overflow="hidden" gap>

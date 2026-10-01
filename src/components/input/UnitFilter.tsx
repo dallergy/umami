@@ -1,5 +1,5 @@
-import { ListItem, Row, Select } from '@umami/react-zen';
 import { useMessages, useNavigation } from '@/components/hooks';
+import { cn } from '@/lib/cn';
 import { DATE_RANGE_CONFIG, DEFAULT_DATE_RANGE_VALUE } from '@/lib/constants';
 import { getItem } from '@/lib/storage';
 
@@ -45,27 +45,43 @@ export function UnitFilter() {
     router.push(updateParams({ unit: value }));
   };
 
-  const options = unitConfig.availableUnits.map(unit => ({
-    id: unit,
-    label: t(labels[unit]),
-  }));
+  const options = [...unitConfig.availableUnits]
+    .sort((a: string, b: string) => UNIT_ORDER.indexOf(a) - UNIT_ORDER.indexOf(b))
+    .map((unit: string) => ({
+      id: unit,
+      label: t(labels[unit]),
+    }));
 
   const selectedUnit = query.unit ?? unitConfig.defaultUnit;
 
   return (
-    <Row>
-      <Select
-        value={selectedUnit}
-        onChange={value => handleChange(value as string)}
-        popoverProps={{ side: 'bottom', align: 'end' }}
-        buttonProps={{ style: { width: 100 } }}
-      >
-        {options.map(({ id, label }) => (
-          <ListItem key={id} id={id}>
+    <div
+      role="radiogroup"
+      className="inline-flex h-7 items-center rounded-md bg-muted p-0.5 text-xs font-medium"
+    >
+      {options.map(({ id, label }) => {
+        const active = id === selectedUnit;
+
+        return (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => handleChange(id)}
+            className={cn(
+              'inline-flex h-6 items-center rounded-[5px] px-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+              active
+                ? 'bg-card text-foreground shadow-card'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
             {label}
-          </ListItem>
-        ))}
-      </Select>
-    </Row>
+          </button>
+        );
+      })}
+    </div>
   );
 }
+
+const UNIT_ORDER = ['minute', 'hour', 'day', 'month', 'year'];

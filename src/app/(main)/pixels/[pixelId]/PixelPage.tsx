@@ -22,7 +22,7 @@ export function PixelPage({
   return (
     <PixelProvider pixelId={pixelId}>
       <Grid width="100%" height="100%">
-        <Column margin="2">
+        <Column>
           <PageBody gap>
             <PixelHeader showActions={showHeaderActions} />
             <PixelControls pixelId={pixelId} />

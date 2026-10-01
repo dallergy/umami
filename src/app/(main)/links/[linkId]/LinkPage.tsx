@@ -22,7 +22,7 @@ export function LinkPage({
   return (
     <LinkProvider linkId={linkId}>
       <Grid width="100%" height="100%">
-        <Column margin="2">
+        <Column>
           <PageBody gap>
             <LinkHeader showActions={showHeaderActions} />
             <LinkControls linkId={linkId} />

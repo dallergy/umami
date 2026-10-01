@@ -1,9 +1,9 @@
 'use client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Column, Row, Switch, Text } from '@umami/react-zen';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Panel } from '@/components/common/Panel';
-import { useMessages, useUpdateQuery, useTwoFactorStatusQuery } from '@/components/hooks';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMessages, useTwoFactorStatusQuery, useUpdateQuery } from '@/components/hooks';
 
 export function AdminSecurityPage() {
   const { t, labels, messages } = useMessages();
@@ -23,7 +23,7 @@ export function AdminSecurityPage() {
   if (isLoading) return null;
 
   return (
-    <Column gap="6" margin="2">
+    <Column gap="3">
       <PageHeader title={t(labels.security)} />
       <Panel>
         <Column gap="4">

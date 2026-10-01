@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import { render, screen } from '@/test/render';
-import { resetTestNavigation } from '@/test/navigation';
-import { setShareData } from '@/store/app';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ShareProvider } from '@/app/share/ShareProvider';
+import { setShareData } from '@/store/app';
+import { resetTestNavigation } from '@/test/navigation';
+import { render, screen } from '@/test/render';
 import { SharePage } from './SharePage';
 
 const mockShare = vi.hoisted(() => ({
@@ -124,12 +124,6 @@ vi.mock('@/components/common/PageBody', () => ({
   PageBody: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/components/input/MobileMenuButton', () => ({
-  MobileMenuButton: ({ children }: { children: ReactNode | ((props: { close: () => void }) => ReactNode) }) => (
-    <div>{typeof children === 'function' ? children({ close: () => {} }) : children}</div>
-  ),
-}));
-
 vi.mock('./ShareFooter', () => ({
   ShareFooter: () => <div>share footer</div>,
 }));
@@ -153,7 +147,7 @@ describe('SharePage', () => {
       { route: '/share/slug/events' },
     );
 
-    expect(screen.getAllByText('share nav')).toHaveLength(2);
+    expect(screen.getByText('share nav')).toBeInTheDocument();
     expect(screen.getByText('website header')).toBeInTheDocument();
     expect(screen.getByText('events page')).toBeInTheDocument();
     expect(initTheme).toHaveBeenCalled();

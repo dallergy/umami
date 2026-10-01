@@ -1,29 +1,38 @@
+import { Check, ChevronsUpDown, Settings2 } from 'lucide-react';
+import { useLoginQuery, useMessages, useNavigation } from '@/components/hooks';
 import {
-  Button,
-  Icon,
-  Menu,
-  MenuItem,
-  MenuSection,
-  MenuSeparator,
-  MenuTrigger,
-  Row,
-  Text,
-} from '@umami/react-zen';
-import { ArrowRight } from 'lucide-react';
-import type { Key } from 'react';
-import { IconLabel } from '@/components/common/IconLabel';
-import { useLoginQuery, useMessages, useMobile, useNavigation } from '@/components/hooks';
-import { ChevronRight, User, Users } from '@/components/icons';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/cn';
 import { LAST_TEAM_CONFIG } from '@/lib/constants';
 import { removeItem } from '@/lib/storage';
+
+function Initial({ name, team }: { name?: string; team?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'flex size-5 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold uppercase',
+        team
+          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-indigo-300'
+          : 'bg-muted text-muted-foreground',
+      )}
+    >
+      {name?.slice(0, 1) || '?'}
+    </span>
+  );
+}
 
 export function TeamsButton() {
   const { user } = useLoginQuery();
   const { t, labels } = useMessages();
   const { teamId, router } = useNavigation();
-  const { isPhone } = useMobile();
   const team = user?.teams?.find(({ id }) => id === teamId);
-  const selectedKeys = new Set([teamId || 'user']);
   const label = teamId ? team?.name : user.username;
 
   const cloudMode = !!process.env.cloudMode;
@@ -40,61 +49,53 @@ export function TeamsButton() {
     }
   };
 
-  const handleAction = async (key: Key) => {
-    if (key === 'user') {
-      removeItem(LAST_TEAM_CONFIG);
-      if (cloudMode) {
-        window.location.href = '/';
-      } else {
-        router.push('/');
-      }
+  const handleSelectUser = () => {
+    removeItem(LAST_TEAM_CONFIG);
+
+    if (cloudMode) {
+      window.location.href = '/';
+    } else {
+      router.push('/');
     }
   };
 
   return (
-    <MenuTrigger>
-      <Button variant="quiet">
-        <Row
-          alignItems="center"
-          position="relative"
-          gap
-          maxHeight="40px"
-          minWidth={isPhone ? '100px' : '200px'}
-          maxWidth="200px"
-        >
-          <Icon>{teamId ? <Users /> : <User />}</Icon>
-          <Text truncate>{label}</Text>
-        </Row>
-        <Icon rotate={90} size="sm">
-          <ChevronRight />
-        </Icon>
-      </Button>
-      <Menu className="min-w-[300px]" selectionMode="single" selectedKeys={selectedKeys}>
-        <MenuSection title={t(labels.myAccount)}>
-          <MenuItem id="user" onAction={handleAction}>
-            <IconLabel icon={<User />} label={user.username} />
-          </MenuItem>
-        </MenuSection>
-        <MenuSeparator />
-        <MenuSection title={t(labels.teams)}>
-          {user?.teams?.map(({ id, name }) => (
-            <MenuItem key={id} id={id} onAction={() => handleNavigate(getUrl(`/teams/${id}`))}>
-              <IconLabel icon={<Users />}>
-                <Text wrap="nowrap">{name}</Text>
-              </IconLabel>
-            </MenuItem>
-          ))}
-          <MenuSeparator />
-          <MenuItem id="manage-teams" onAction={() => handleNavigate(getUrl('/settings/teams'))}>
-            <Row alignItems="center" justifyContent="space-between" gap width="100%">
-              <Text align="center">Manage teams</Text>
-              <Icon>
-                <ArrowRight />
-              </Icon>
-            </Row>
-          </MenuItem>
-        </MenuSection>
-      </Menu>
-    </MenuTrigger>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger className="group inline-flex h-8 max-w-[180px] min-w-0 items-center gap-2 rounded-md px-1.5 text-sm font-medium text-foreground outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-accent">
+        <Initial name={label} team={!!teamId} />
+        <span className="hidden truncate sm:block">{label}</span>
+        <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+          {t(labels.myAccount)}
+        </DropdownMenuLabel>
+        <DropdownMenuItem onSelect={handleSelectUser}>
+          <Initial name={user.username} />
+          <span className="flex-1 truncate">{user.username}</span>
+          {!teamId && <Check className="size-4 text-primary" />}
+        </DropdownMenuItem>
+        {user?.teams?.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+              {t(labels.teams)}
+            </DropdownMenuLabel>
+            {user.teams.map(({ id, name }) => (
+              <DropdownMenuItem key={id} onSelect={() => handleNavigate(getUrl(`/teams/${id}`))}>
+                <Initial name={name} team />
+                <span className="flex-1 truncate">{name}</span>
+                {id === teamId && <Check className="size-4 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => handleNavigate(getUrl('/settings/teams'))}>
+          <Settings2 />
+          {t(labels.manageTeams)}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

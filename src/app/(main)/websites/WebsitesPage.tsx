@@ -1,8 +1,6 @@
 'use client';
-import { Column } from '@umami/react-zen';
 import { PageBody } from '@/components/common/PageBody';
 import { PageHeader } from '@/components/common/PageHeader';
-import { Panel } from '@/components/common/Panel';
 import { useLoginQuery, useMessages, useNavigation, useTeamMembersQuery } from '@/components/hooks';
 import { ROLES } from '@/lib/constants';
 import { WebsiteAddButton } from './WebsiteAddButton';
@@ -22,14 +20,10 @@ export function WebsitesPage() {
 
   return (
     <PageBody>
-      <Column gap="6" margin="2">
-        <PageHeader title={t(labels.websites)}>
-          {showActions && <WebsiteAddButton teamId={teamId} />}
-        </PageHeader>
-        <Panel>
-          <WebsitesDataTable teamId={teamId} showActions={showActions} />
-        </Panel>
-      </Column>
+      <PageHeader title={t(labels.websites)}>
+        {showActions && <WebsiteAddButton teamId={teamId} />}
+      </PageHeader>
+      <WebsitesDataTable teamId={teamId} showActions={showActions} />
     </PageBody>
   );
 }

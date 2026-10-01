@@ -1,3 +1,4 @@
+import type { ImgHTMLAttributes, SyntheticEvent } from 'react';
 import { useConfig } from '@/components/hooks';
 import { FAVICON_URL, GROUPED_DOMAINS } from '@/lib/constants';
 
@@ -6,7 +7,15 @@ function getHostName(url: string) {
   return match && match.length > 1 ? match[1] : null;
 }
 
-export function Favicon({ domain, ...props }) {
+// A missing favicon should leave a quiet gap, never a broken-image glyph.
+function hideOnError(event: SyntheticEvent<HTMLImageElement>) {
+  event.currentTarget.style.visibility = 'hidden';
+}
+
+export function Favicon({
+  domain,
+  ...props
+}: { domain?: string } & ImgHTMLAttributes<HTMLImageElement>) {
   const config = useConfig();
 
   if (config?.privateMode) {
@@ -18,5 +27,16 @@ export function Favicon({ domain, ...props }) {
   const domainName = GROUPED_DOMAINS[hostName]?.domain || hostName;
   const src = hostName ? url.replace(/\{\{\s*domain\s*}}/, domainName) : null;
 
-  return hostName ? <img src={src} width={16} height={16} alt="" {...props} /> : null;
+  return hostName ? (
+    <img
+      src={src}
+      width={16}
+      height={16}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      onError={hideOnError}
+      {...props}
+    />
+  ) : null;
 }

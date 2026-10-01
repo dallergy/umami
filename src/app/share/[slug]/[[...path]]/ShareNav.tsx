@@ -1,19 +1,14 @@
-import { Button, Column, Icon, Row, ThemeButton } from '@umami/react-zen';
 import { useMessages, useNavigation, useShare } from '@/components/hooks';
-import { AlignEndHorizontal, Clock, Eye, PanelLeft, Sheet, Tag, User } from '@/components/icons';
+import { AlignEndHorizontal, Clock, Eye, Sheet, Tag, User } from '@/components/icons';
 import { LanguageButton } from '@/components/input/LanguageButton';
 import { PreferencesButton } from '@/components/input/PreferencesButton';
-import { SidebarLink, SidebarSection } from '@/components/nav/SidebarLink';
+import { ThemeToggle } from '@/components/input/ThemeToggle';
+import { type NavTabEntry, NavTabs } from '@/components/nav/NavTabs';
 import { Funnel, Gauge, Lightning, Magnet, Money, Network, Path, Target } from '@/components/svg';
 import { allowShareFilter, excludeShareFilterParam, getShareTheme } from '@/lib/share';
 import { buildPath } from '@/lib/url';
-import { ShareBranding } from './ShareBranding';
 
-export function ShareNav({
-  collapsed,
-  onCollapse,
-  onItemClick,
-}: {
+export function ShareNav(_props: {
   collapsed?: boolean;
   onCollapse?: (collapsed: boolean) => void;
   onItemClick?: () => void;
@@ -118,82 +113,53 @@ export function ShareNav({
   // Filter items based on parameters
   const items = allItems
     .map(section => ({
+      id: section.section,
       label: section.label,
       items: section.items.filter(item => parameters[item.id] === true),
     }))
     .filter(section => section.items.length > 0);
 
-  const selectedKey = items
-    .flatMap(e => e.items)
-    .find(({ path }) => path && pathname.endsWith(path.split('?')[0]))?.id;
+  const overview = {
+    id: 'overview',
+    label: t(labels.overview),
+    href: renderPath(''),
+  };
 
-  const isMobile = !!onItemClick;
+  const flatItems = items.flatMap(e => e.items);
+  // The bare share URL is the overview, which is always available.
+  const selectedKey =
+    flatItems.find(({ path }) => path && pathname.endsWith(path.split('?')[0]))?.id || 'overview';
+
+  const toTab = ({ id, label, path }: { id: string; label: string; path: string }) => ({
+    id,
+    label,
+    href: path,
+  });
+
+  const [traffic, ...groups] = items;
+  const tabs: NavTabEntry[] = [
+    ...(traffic?.id === 'traffic'
+      ? traffic.items.map(toTab)
+      : [overview, ...(traffic ? [{ ...traffic, items: traffic.items.map(toTab) }] : [])]),
+    ...groups.map(group => ({ ...group, items: group.items.map(toTab) })),
+  ];
+
+  if (!tabs.some(tab => tab.id === 'overview')) {
+    tabs.unshift(overview);
+  }
 
   return (
-    <Column
-      position={isMobile ? undefined : 'fixed'}
-      paddingX={collapsed ? '1' : '3'}
-      paddingY="3"
-      width={isMobile ? '100%' : collapsed ? '60px' : '240px'}
-      maxHeight="100dvh"
-      height="100dvh"
-      border={isMobile ? undefined : 'right'}
-      className="bg-sidebar text-sidebar-foreground"
-    >
-      <Row
-        as="header"
-        gap
-        alignItems="center"
-        justifyContent={collapsed ? 'center' : 'space-between'}
-      >
-        {!collapsed && <ShareBranding size="md" />}
-        {!onItemClick && (
-          <Button variant="quiet" onPress={() => onCollapse?.(!collapsed)}>
-            <Icon color="muted">
-              <PanelLeft />
-            </Icon>
-          </Button>
-        )}
-      </Row>
-      <Column flexGrow={1} marginTop="2" overflowY="auto" gap="2">
-        {items.map(({ label: sectionLabel, items: sectionItems }, index) => (
-          <SidebarSection
-            key={`${sectionLabel}${index}`}
-            label={collapsed ? undefined : sectionLabel}
-          >
-            {sectionItems.map(({ id, path, label, icon }) => (
-              <SidebarLink
-                key={id}
-                href={path}
-                label={label}
-                icon={icon}
-                selected={selectedKey === id}
-                collapsed={collapsed}
-                onClick={onItemClick}
-              />
-            ))}
-          </SidebarSection>
-        ))}
-      </Column>
-      <Column
-        flexGrow={collapsed ? 1 : undefined}
-        justifyContent="flex-end"
-        alignItems={collapsed ? 'center' : undefined}
-      >
-        {collapsed ? (
-          <Column gap="2" alignItems="center">
-            {!shareTheme && <ThemeButton />}
-            <LanguageButton />
-            <PreferencesButton />
-          </Column>
-        ) : (
-          <Row>
-            {!shareTheme && <ThemeButton />}
-            <LanguageButton />
-            <PreferencesButton />
-          </Row>
-        )}
-      </Column>
-    </Column>
+    <NavTabs
+      label={t(labels.navigation)}
+      items={tabs}
+      selectedId={selectedKey}
+      end={
+        <div className="flex items-center gap-1">
+          {!shareTheme && <ThemeToggle />}
+          <LanguageButton />
+          <PreferencesButton />
+        </div>
+      }
+    />
   );
 }

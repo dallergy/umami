@@ -47,13 +47,15 @@ export const MetricCard = ({
   }, [p, pctSpring]);
 
   return (
-    <Card className="gap-3 rounded-xl py-4 shadow-xs">
+    <Card className="gap-1.5 px-5 py-4">
       {showLabel && (
-        <CardHeader className="flex flex-row items-start justify-between gap-2 px-5">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <CardHeader className="flex min-h-5 flex-row items-center justify-between gap-2 px-0">
+          <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            {label}
+          </p>
           {tooltip && (
             <TooltipTrigger delay={0}>
-              <Button size="sm" variant="quiet">
+              <Button size="sm" variant="quiet" className="-my-1 size-6 p-0">
                 <Icon size="sm">
                   <Info />
                 </Icon>
@@ -63,8 +65,8 @@ export const MetricCard = ({
           )}
         </CardHeader>
       )}
-      <CardContent className="flex flex-col items-start gap-2 px-5">
-        <div className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+      <CardContent className="flex flex-wrap items-baseline gap-x-2 gap-y-1 px-0">
+        <div className="text-2xl leading-8 font-bold tracking-tight text-foreground tabular-nums">
           <AnimatedDiv title={value?.toString()}>{valueText}</AnimatedDiv>
         </div>
         {showChange && (

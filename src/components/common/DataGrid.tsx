@@ -39,6 +39,10 @@ export interface DataGridProps {
   autoFocus?: boolean;
   renderActions?: () => ReactNode;
   renderEmpty?: () => ReactNode;
+  /** Display mode used until the person picks one. */
+  defaultDisplayMode?: DisplayMode;
+  /** Remember the picked display mode separately for this grid. */
+  displayModeKey?: string;
   children: ReactNode | ((data: any) => ReactNode);
 }
 
@@ -50,6 +54,8 @@ export function DataGrid({
   autoFocus,
   renderActions,
   renderEmpty = () => <Empty />,
+  defaultDisplayMode,
+  displayModeKey = DISPLAY_MODE_STORAGE_KEY,
   children,
 }: DataGridProps) {
   const { t, labels } = useMessages();
@@ -59,15 +65,17 @@ export function DataGrid({
   const showPager = allowPaging && data && data.count > 0;
   const { isMobile } = useMobile();
   const [userDisplayMode, setUserDisplayMode] = useState<DisplayMode | null>(() => {
-    const stored = getItem(DISPLAY_MODE_STORAGE_KEY);
+    const stored = getItem(displayModeKey);
     return stored === 'table' || stored === 'cards' ? stored : null;
   });
 
-  const displayMode: DisplayMode | undefined = isMobile ? 'cards' : (userDisplayMode ?? undefined);
+  const displayMode: DisplayMode | undefined = isMobile
+    ? 'cards'
+    : (userDisplayMode ?? defaultDisplayMode ?? undefined);
 
   const handleToggleDisplayMode = () => {
     const next: DisplayMode = displayMode === 'cards' ? 'table' : 'cards';
-    setItem(DISPLAY_MODE_STORAGE_KEY, next);
+    setItem(displayModeKey, next);
     setUserDisplayMode(next);
   };
 
@@ -133,7 +141,9 @@ export function DataGrid({
         <Row
           alignItems="center"
           gap
-          style={isMobile ? { width: '100%', justifyContent: 'flex-start' } : { marginLeft: 'auto' }}
+          style={
+            isMobile ? { width: '100%', justifyContent: 'flex-start' } : { marginLeft: 'auto' }
+          }
         >
           {renderActions?.()}
           {!isMobile && viewToggleButton}

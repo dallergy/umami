@@ -1,8 +1,7 @@
 'use client';
-import { Column } from '@umami/react-zen';
 import { useState } from 'react';
 import { ExpandedViewModal } from '@/app/(main)/websites/[websiteId]/ExpandedViewModal';
-import { Panel } from '@/components/common/Panel';
+import { useNavigation } from '@/components/hooks';
 import { DialogButton } from '@/components/input/DialogButton';
 import { UnitFilter } from '@/components/input/UnitFilter';
 import type { AnnotationRange } from '@/lib/annotations';
@@ -17,33 +16,45 @@ import { WebsitePanels } from './WebsitePanels';
 export function WebsitePage({ websiteId }: { websiteId: string }) {
   const [annotationRange, setAnnotationRange] = useState<AnnotationRange | null>(null);
   const [focus, setFocus] = useState<ChartFocus>('visitors');
+  const { query } = useNavigation();
+  const compareMode = !!query.compare;
 
   return (
-    <Column gap="3">
-      <WebsiteControls websiteId={websiteId} allowBounceFilter={true} />
-      <Panel paddingY="3" paddingX="4" className="gap-2">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1">
-            <WebsiteMetricsBar
+    <div className="flex flex-col">
+      <WebsiteControls
+        websiteId={websiteId}
+        allowBounceFilter={true}
+        allowCompare={true}
+        compareMode="toggle"
+      />
+      <div className="flex flex-col gap-4">
+        <section className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-card">
+          <WebsiteMetricsBar
+            websiteId={websiteId}
+            variant="strip"
+            focus={focus}
+            onFocusChange={setFocus}
+            compareMode={compareMode}
+          />
+          <div className="border-t border-border px-3 pt-2 pb-3 sm:px-5 sm:pb-4">
+            <WebsiteChart
               websiteId={websiteId}
-              showChange={true}
-              variant="strip"
               focus={focus}
-              onFocusChange={setFocus}
+              compareMode={compareMode}
+              chartHeight="300px"
+              showAnnotations
+              onAnnotationMoreClick={setAnnotationRange}
+              legendActions={
+                <>
+                  <AnnotationsButton websiteId={websiteId} />
+                  <UnitFilter />
+                </>
+              }
             />
           </div>
-          <UnitFilter />
-        </div>
-        <WebsiteChart
-          websiteId={websiteId}
-          focus={focus}
-          chartHeight="220px"
-          showAnnotations
-          onAnnotationMoreClick={setAnnotationRange}
-          legendActions={<AnnotationsButton websiteId={websiteId} />}
-        />
-      </Panel>
-      <WebsitePanels websiteId={websiteId} />
+        </section>
+        <WebsitePanels websiteId={websiteId} />
+      </div>
       <ExpandedViewModal websiteId={websiteId} />
       <DialogButton
         isOpen={!!annotationRange}
@@ -64,6 +75,6 @@ export function WebsitePage({ websiteId }: { websiteId: string }) {
           )
         }
       </DialogButton>
-    </Column>
+    </div>
   );
 }

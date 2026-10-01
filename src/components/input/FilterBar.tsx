@@ -4,7 +4,6 @@ import {
   DialogTrigger,
   Icon,
   Modal,
-  Row,
   Text,
   Tooltip,
   TooltipTrigger,
@@ -96,162 +95,134 @@ export function FilterBar({ websiteId }: { websiteId?: string }) {
   }
 
   return (
-    <Row
-      gap
-      alignItems="center"
-      justifyContent="space-between"
-      padding="2"
-      backgroundColor="surface-sunken"
-      wrap="wrap"
-    >
-      <Row alignItems="center" gap="2" wrap="wrap" width={{ base: '100%', md: 'auto' }}>
-        {segment && !isLoading && (
-          <FilterItem
-            name="segment"
-            label={t(labels.segment)}
-            value={data?.name || segment}
-            operator={operatorLabels.eq}
-            onRemove={() => handleSegmentRemove('segment')}
-          />
-        )}
-        {cohort && !isLoading && (
-          <FilterItem
-            name="cohort"
-            label={t(labels.cohort)}
-            value={data?.name || cohort}
-            operator={operatorLabels.eq}
-            onRemove={() => handleSegmentRemove('cohort')}
-          />
-        )}
-        {filters.map(filter => {
-          const { name, type, label, operator, value } = filter;
-          const paramValue = isSearchOperator(operator)
-            ? value
-            : String(value)
-                .split(',')
-                .map(v => formatValue(v, type || name))
-                .join(', ');
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+      {segment && !isLoading && (
+        <FilterItem
+          name="segment"
+          label={t(labels.segment)}
+          value={data?.name || segment}
+          operator={operatorLabels.eq}
+          onRemove={() => handleSegmentRemove('segment')}
+        />
+      )}
+      {cohort && !isLoading && (
+        <FilterItem
+          name="cohort"
+          label={t(labels.cohort)}
+          value={data?.name || cohort}
+          operator={operatorLabels.eq}
+          onRemove={() => handleSegmentRemove('cohort')}
+        />
+      )}
+      {filters.map(filter => {
+        const { name, type, label, operator, value } = filter;
+        const paramValue = isSearchOperator(operator)
+          ? value
+          : String(value)
+              .split(',')
+              .map(v => formatValue(v, type || name))
+              .join(', ');
 
-          return (
-            <FilterItem
-              key={name}
-              name={name}
-              label={label}
-              operator={operatorLabels[operator]}
-              value={paramValue}
-              onRemove={(name: string) => handleCloseFilter(name)}
-            />
-          );
-        })}
-        {eventPropertyFilters.map((filter, index) => (
+        return (
           <FilterItem
-            key={`epf${index}`}
-            name={`epf${index}`}
-            label={`${t(labels.eventProperties)}: ${filter.propertyName}`}
-            operator={operatorLabels[filter.operator]}
-            value={filter.value}
-            onRemove={() => handleEventPropertyFilterRemove(index)}
+            key={name}
+            name={name}
+            label={label}
+            operator={operatorLabels[operator]}
+            value={paramValue}
+            onRemove={(name: string) => handleCloseFilter(name)}
           />
-        ))}
-        {sessionPropertyFilters.map((filter, index) => (
-          <FilterItem
-            key={`spf${index}`}
-            name={`spf${index}`}
-            label={`${t(labels.sessionData)}: ${filter.propertyName}`}
-            operator={operatorLabels[filter.operator]}
-            value={filter.value}
-            onRemove={() => handleSessionPropertyFilterRemove(index)}
-          />
-        ))}
-      </Row>
-      <Row alignItems="center">
-        <DialogTrigger>
-          {canSaveSegment && (
-            <TooltipTrigger delay={0}>
-              <Button variant="zero">
-                <Icon>
-                  <Bookmark />
-                </Icon>
-              </Button>
-              <Tooltip>
-                <Text>{t(labels.saveSegment)}</Text>
-              </Tooltip>
-            </TooltipTrigger>
-          )}
-          <Modal placement={isMobile ? 'fullscreen' : 'center'}>
-            <Dialog
-              title={t(labels.segment)}
-              style={{
-                width: isMobile ? '100%' : '800px',
-                height: isMobile ? '100%' : undefined,
-                minHeight: 300,
-                maxHeight: isMobile ? '100%' : 'calc(100dvh - 40px)',
-                overflowY: 'auto',
-                padding: '32px',
-              }}
-            >
-              {({ close }) => {
-                return (
-                  <SegmentEditForm
-                    websiteId={websiteId}
-                    onClose={close}
-                    filters={filters}
-                    sessionPropertyFilters={sessionPropertyFilters}
-                  />
-                );
-              }}
-            </Dialog>
-          </Modal>
-        </DialogTrigger>
-        <TooltipTrigger delay={0}>
-          <Button variant="zero" onPress={handleResetFilter}>
-            <Icon>
-              <X />
-            </Icon>
-          </Button>
-          <Tooltip>
-            <Text>{t(labels.clearAll)}</Text>
-          </Tooltip>
-        </TooltipTrigger>
-      </Row>
-    </Row>
+        );
+      })}
+      {eventPropertyFilters.map((filter, index) => (
+        <FilterItem
+          key={`epf${index}`}
+          name={`epf${index}`}
+          label={`${t(labels.eventProperties)}: ${filter.propertyName}`}
+          operator={operatorLabels[filter.operator]}
+          value={filter.value}
+          onRemove={() => handleEventPropertyFilterRemove(index)}
+        />
+      ))}
+      {sessionPropertyFilters.map((filter, index) => (
+        <FilterItem
+          key={`spf${index}`}
+          name={`spf${index}`}
+          label={`${t(labels.sessionData)}: ${filter.propertyName}`}
+          operator={operatorLabels[filter.operator]}
+          value={filter.value}
+          onRemove={() => handleSessionPropertyFilterRemove(index)}
+        />
+      ))}
+      <DialogTrigger>
+        {canSaveSegment && (
+          <TooltipTrigger delay={0}>
+            <Button variant="zero" className="size-8 rounded-full p-0 text-muted-foreground">
+              <Icon size="sm">
+                <Bookmark />
+              </Icon>
+            </Button>
+            <Tooltip>
+              <Text>{t(labels.saveSegment)}</Text>
+            </Tooltip>
+          </TooltipTrigger>
+        )}
+        <Modal placement={isMobile ? 'fullscreen' : 'center'}>
+          <Dialog
+            title={t(labels.segment)}
+            style={{
+              width: isMobile ? '100%' : '800px',
+              height: isMobile ? '100%' : undefined,
+              minHeight: 300,
+              maxHeight: isMobile ? '100%' : 'calc(100dvh - 40px)',
+              overflowY: 'auto',
+              padding: '32px',
+            }}
+          >
+            {({ close }) => {
+              return (
+                <SegmentEditForm
+                  websiteId={websiteId}
+                  onClose={close}
+                  filters={filters}
+                  sessionPropertyFilters={sessionPropertyFilters}
+                />
+              );
+            }}
+          </Dialog>
+        </Modal>
+      </DialogTrigger>
+      <button
+        type="button"
+        onClick={handleResetFilter}
+        className="inline-flex h-8 items-center rounded-full px-2.5 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {t(labels.clearAll)}
+      </button>
+    </div>
   );
 }
 
 const FilterItem = ({ name, label, operator, value, onRemove }) => {
   return (
-    <Row
-      border
-      padding="2"
-      color
-      backgroundColor
-      borderRadius
-      alignItems="center"
-      justifyContent="space-between"
-      theme="dark"
-    >
-      <Row alignItems="center" gap="4">
-        <Row
-          alignItems="center"
-          gap="2"
-          style={{ maxWidth: 'min(500px, calc(100vw - 10rem))', minWidth: 0, overflow: 'hidden' }}
-        >
-          <Text color="primary" weight="bold">
-            {label}
-          </Text>
-          <Text color="muted">{operator}</Text>
-          <Text
-            color="primary"
-            weight="bold"
-            style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            {value}
-          </Text>
-        </Row>
-        <Icon onClick={() => onRemove(name)} size="xs" style={{ cursor: 'pointer' }}>
-          <X />
-        </Icon>
-      </Row>
-    </Row>
+    <span className="inline-flex h-8 max-w-full min-w-0 items-center gap-1 rounded-full border border-border bg-card pr-1 pl-3 text-[13px] shadow-card">
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="shrink-0 text-subtle-foreground">{operator}</span>
+      <span
+        className="min-w-0 truncate font-medium text-foreground"
+        style={{ maxWidth: 'min(320px, calc(100vw - 12rem))' }}
+        title={String(value)}
+      >
+        {value}
+      </span>
+      <button
+        type="button"
+        aria-label={`${label} ×`}
+        onClick={() => onRemove(name)}
+        className="ml-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <X className="size-3.5" />
+      </button>
+    </span>
   );
 };

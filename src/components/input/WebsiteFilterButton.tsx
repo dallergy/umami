@@ -68,11 +68,24 @@ export function WebsiteFilterButton({
     router.push(url);
   };
 
+  const activeCount = currentFilters.length;
+
   return (
     <DialogButton
       icon={<ListFilter />}
-      label={t(labels.filter)}
+      label={
+        <span className="inline-flex items-center gap-1.5">
+          {t(labels.filter)}
+          {activeCount > 0 && (
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground tabular-nums">
+              {activeCount}
+            </span>
+          )}
+        </span>
+      }
+      title={t(labels.filter)}
       variant="outline"
+      className="h-9 rounded-lg border-border bg-card px-3 text-[13px] font-medium shadow-card hover:bg-accent"
       height="min(80dvh, calc(100dvh - 40px))"
     >
       {({ close }) => {

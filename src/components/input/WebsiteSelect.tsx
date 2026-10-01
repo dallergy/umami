@@ -1,6 +1,7 @@
 import { Icon, ListItem, Row, Select, type SelectProps, Text } from '@umami/react-zen';
 import { useEffect, useState } from 'react';
 import { Empty } from '@/components/common/Empty';
+import { Favicon } from '@/components/common/Favicon';
 import {
   useLoginQuery,
   useMessages,
@@ -60,11 +61,17 @@ export function WebsiteSelect({
     const value = name || props.placeholder || t(labels.selectWebsite);
 
     return (
-      <Row alignItems="center" gap>
-        <Icon>
-          <Globe />
-        </Icon>
-        <Text truncate color={name ? undefined : 'muted'}>
+      <Row alignItems="center" gap="2" minWidth="0">
+        <span className="flex size-4 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+          {website?.domain ? (
+            <Favicon domain={website.domain} className="size-4" />
+          ) : (
+            <Icon size="sm" color="muted">
+              <Globe />
+            </Icon>
+          )}
+        </span>
+        <Text truncate weight="medium" color={name ? undefined : 'muted'}>
           {value}
         </Text>
       </Row>

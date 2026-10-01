@@ -1,21 +1,6 @@
-import {
-  Button,
-  Column,
-  Icon,
-  Menu,
-  MenuItem,
-  MenuSeparator,
-  MenuTrigger,
-  Popover,
-  Row,
-  SubmenuTrigger,
-  Text,
-  Tooltip,
-  TooltipTrigger,
-  useTheme,
-} from '@umami/react-zen';
+import { useTheme } from '@umami/react-zen';
 import { useRouter } from 'next/navigation';
-import { useConfig, useLocale, useLoginQuery, useMessages, useMobile } from '@/components/hooks';
+import { useConfig, useLocale, useLoginQuery, useMessages } from '@/components/hooks';
 import {
   BookText,
   ExternalLink,
@@ -29,21 +14,35 @@ import {
   SunMoon,
 } from '@/components/icons';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/cn';
 import { DOCS_URL } from '@/lib/constants';
 import { languages } from '@/lib/lang';
 
 export interface UserButtonProps {
   showText?: boolean;
+  placement?: 'top' | 'bottom';
   onClose?: () => void;
 }
 
-export function UserButton({ showText = true, onClose }: UserButtonProps) {
+export function UserButton({ showText = true, placement = 'top', onClose }: UserButtonProps) {
   const { user } = useLoginQuery();
   const { cloudMode } = useConfig();
   const { t, labels } = useMessages();
   const { locale, saveLocale } = useLocale();
   const { theme, setTheme } = useTheme();
-  const { isMobile } = useMobile();
   const router = useRouter();
 
   const getUrl = (url: string) => {
@@ -67,15 +66,10 @@ export function UserButton({ showText = true, onClose }: UserButtonProps) {
     onClose?.();
   };
 
-  const handleSelectTheme = (key: 'light' | 'dark') => {
-    setTheme(key);
+  const handleSelectTheme = (key: string) => {
+    setTheme(key as 'light' | 'dark');
     onClose?.();
   };
-
-  const languageItems = Object.keys(languages).map(key => ({
-    value: key,
-    label: languages[key].label,
-  }));
 
   const items = [
     cloudMode && {
@@ -99,137 +93,100 @@ export function UserButton({ showText = true, onClose }: UserButtonProps) {
         path: '/admin',
         icon: <LockKeyhole />,
       },
-    {
-      id: 'separator',
-      separator: true,
-    },
-    {
-      id: 'logout',
-      label: t(labels.logout),
-      path: getUrl('/logout'),
-      icon: <LogOut />,
-    },
-  ].filter(Boolean);
+  ].filter(Boolean) as {
+    id: string;
+    label: string;
+    path: string;
+    icon: React.ReactNode;
+    target?: string;
+    external?: boolean;
+  }[];
 
   const initials = user.username.slice(0, 2).toUpperCase();
-  const trigger = (
-    <Button
-      variant="quiet"
-      aria-label={showText ? undefined : user.username}
-      className="h-9 justify-start gap-2 rounded-md px-2"
-      style={{ width: '100%' }}
-    >
-      <Avatar size="sm" aria-hidden="true">
-        <AvatarFallback>{initials}</AvatarFallback>
-      </Avatar>
-      {showText && <Text className="truncate">{user.username}</Text>}
-    </Button>
-  );
-
-  const menu = (
-    <MenuTrigger>
-      {trigger}
-      <Popover side="top" align="start">
-        <Column minWidth="200px">
-          <Menu>
-            <MenuItem id="settings" onAction={() => handleNavigate(getUrl('/settings'))}>
-              <Row alignItems="center" gap>
-                <Icon>
-                  <Settings />
-                </Icon>
-                <Text>{t(labels.settings)}</Text>
-              </Row>
-            </MenuItem>
-            <SubmenuTrigger>
-              <MenuItem id="language" showSubMenuIcon>
-                <Row alignItems="center" gap>
-                  <Icon>
-                    <Globe />
-                  </Icon>
-                  <Text>{t(labels.language)}</Text>
-                </Row>
-              </MenuItem>
-              <Popover
-                side={isMobile ? 'bottom' : 'right'}
-                align={isMobile ? 'start' : 'end'}
-                isNonModal
-              >
-                <Menu
-                  selectionMode="single"
-                  selectedKeys={new Set([locale])}
-                  style={{ maxHeight: 300, overflow: 'auto' }}
-                >
-                  {languageItems.map(({ value, label }) => (
-                    <MenuItem key={value} id={value} onAction={() => handleSelectLocale(value)}>
-                      <Text weight={value === locale ? 'bold' : undefined}>{label}</Text>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Popover>
-            </SubmenuTrigger>
-            <SubmenuTrigger>
-              <MenuItem id="theme" showSubMenuIcon>
-                <Row alignItems="center" gap>
-                  <Icon>
-                    <SunMoon />
-                  </Icon>
-                  <Text>{t(labels.theme)}</Text>
-                </Row>
-              </MenuItem>
-              <Popover
-                side={isMobile ? 'bottom' : 'right'}
-                align={isMobile ? 'start' : 'end'}
-                isNonModal
-              >
-                <Menu selectionMode="single" selectedKeys={new Set([theme])}>
-                  <MenuItem id="light" onAction={() => handleSelectTheme('light')}>
-                    <Icon>
-                      <Sun />
-                    </Icon>
-                    <Text weight={theme === 'light' ? 'bold' : undefined}>Light</Text>
-                  </MenuItem>
-                  <MenuItem id="dark" onAction={() => handleSelectTheme('dark')}>
-                    <Icon>
-                      <Moon />
-                    </Icon>
-                    <Text weight={theme === 'dark' ? 'bold' : undefined}>Dark</Text>
-                  </MenuItem>
-                </Menu>
-              </Popover>
-            </SubmenuTrigger>
-            {items.map(({ id, path, label, icon, separator, target, external }: any) => {
-              if (separator) {
-                return <MenuSeparator key={id} />;
-              }
-
-              return (
-                <MenuItem key={id} id={id} onAction={() => handleNavigate(path, target)}>
-                  <Row alignItems="center" gap>
-                    <Icon>{icon}</Icon>
-                    <Text>{label}</Text>
-                    {external && (
-                      <Icon color="muted" size="sm">
-                        <ExternalLink />
-                      </Icon>
-                    )}
-                  </Row>
-                </MenuItem>
-              );
-            })}
-          </Menu>
-        </Column>
-      </Popover>
-    </MenuTrigger>
-  );
-
-  if (showText) {
-    return <div style={{ width: '100%' }}>{menu}</div>;
-  }
 
   return (
-    <TooltipTrigger delay={0}>
-      <div style={{ width: '100%' }}>{menu}</div>
-      <Tooltip placement="right">{user.username}</Tooltip>
-    </TooltipTrigger>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger
+        aria-label={user.username}
+        style={showText ? { width: '100%' } : undefined}
+        className={cn(
+          'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          showText
+            ? 'flex h-9 items-center justify-start gap-2 rounded-md px-2 text-sm hover:bg-accent data-[state=open]:bg-accent'
+            : 'flex size-8 items-center justify-center rounded-full ring-offset-2 ring-offset-card hover:ring-2 hover:ring-border data-[state=open]:ring-2 data-[state=open]:ring-border',
+        )}
+      >
+        <Avatar size={showText ? 'sm' : 'default'} aria-hidden="true">
+          <AvatarFallback
+            className={cn(
+              !showText &&
+                'bg-gradient-to-br from-indigo-500 to-violet-500 text-[11px] font-semibold text-white',
+            )}
+          >
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        {showText && <span className="truncate">{user.username}</span>}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side={placement}
+        align={placement === 'bottom' ? 'end' : 'start'}
+        className="w-56"
+      >
+        <DropdownMenuLabel className="truncate py-2 font-semibold">
+          {user.username}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => handleNavigate(getUrl('/settings'))}>
+          <Settings />
+          {t(labels.settings)}
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="gap-2 text-[13px] [&_svg:not([class*='text-'])]:text-muted-foreground">
+            <Globe className="size-4" />
+            {t(labels.language)}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+            <DropdownMenuRadioGroup value={locale} onValueChange={handleSelectLocale}>
+              {Object.keys(languages).map(key => (
+                <DropdownMenuRadioItem key={key} value={key} className="text-[13px]">
+                  {languages[key].label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="gap-2 text-[13px] [&_svg:not([class*='text-'])]:text-muted-foreground">
+            <SunMoon className="size-4" />
+            {t(labels.theme)}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={theme} onValueChange={handleSelectTheme}>
+              <DropdownMenuRadioItem value="light" className="gap-2 text-[13px]">
+                <Sun className="size-4 text-muted-foreground" />
+                {t(labels.light) || 'Light'}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark" className="gap-2 text-[13px]">
+                <Moon className="size-4 text-muted-foreground" />
+                {t(labels.dark) || 'Dark'}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        {items.map(({ id, path, label, icon, target, external }) => (
+          <DropdownMenuItem key={id} onSelect={() => handleNavigate(path, target)}>
+            {icon}
+            {label}
+            {external && <ExternalLink className="ml-auto size-3.5" />}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => handleNavigate(getUrl('/logout'))}>
+          <LogOut />
+          {t(labels.logout)}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
