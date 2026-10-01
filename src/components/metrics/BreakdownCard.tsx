@@ -190,8 +190,10 @@ export function BreakdownList({
     {
       // Keep rows on screen while the date range or filters change; only switching
       // dimensions (a different `type`) starts from a skeleton.
-      placeholderData: (previous: any, previousQuery: any) =>
-        previousQuery?.queryKey?.[1]?.type === type ? previous : undefined,
+      placeholderData: (previous: any, previousQuery: any) => {
+        const key = previousQuery?.queryKey?.[1];
+        return key?.type === type && key?.websiteId === websiteId ? previous : undefined;
+      },
     },
   );
 

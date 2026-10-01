@@ -2,9 +2,10 @@ import { useTheme } from '@umami/react-zen';
 import type { Plugin, ScriptableContext, TooltipModel } from 'chart.js';
 import { colord } from 'colord';
 import { isAfter, parse } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Chart, type ChartProps } from '@/components/charts/Chart';
-import { useLocale } from '@/components/hooks';
+import { useLocale, useTimezone } from '@/components/hooks';
 import { cn } from '@/lib/cn';
 import { getThemeColors } from '@/lib/colors';
 import {
@@ -129,16 +130,18 @@ function TrafficChartComponent({
 }: TrafficChartProps) {
   const { theme } = useTheme();
   const { locale } = useLocale();
+  const { timezone } = useTimezone();
   const { colors } = useMemo(() => getThemeColors(theme), [theme]);
   const [hover, setHover] = useState<HoverState | null>(null);
-  const lineColorRef = useRef(colors.chart.line);
-  lineColorRef.current = colors.chart.text;
+  const crosshairColor = useRef(colors.chart.text);
+  crosshairColor.current = colors.chart.text;
 
   // Plugins are read once when the Chart.js instance is created, so they read colors from a ref.
-  const plugins = useMemo(() => [createCrosshairPlugin(() => lineColorRef.current)], []);
+  const plugins = useMemo(() => [createCrosshairPlugin(() => crosshairColor.current)], []);
 
   const buckets = useMemo(() => {
-    const now = new Date();
+    // Buckets are wall-clock times in the analytics timezone, so compare against "now" there too.
+    const now = toZonedTime(new Date(), timezone);
     const prepared = series.map(item => {
       const values = generateTimeSeries(item.data, minDate, maxDate, unit, locale);
       const compare = item.compareData
@@ -155,8 +158,11 @@ function TrafficChartComponent({
     const lastIndex = starts.reduce((last, date, index) => (isAfter(date, now) ? last : index), -1);
     const isPartial = lastIndex >= 0 && isAfter(DATE_FUNCTIONS[unit].end(starts[lastIndex]), now);
 
-    return { prepared, labels, starts, lastIndex, isPartial };
-  }, [series, minDate, maxDate, unit, locale]);
+    const multiDay =
+      starts.length > 1 && starts[0].toDateString() !== starts[starts.length - 1].toDateString();
+
+    return { prepared, labels, starts, lastIndex, isPartial, multiDay };
+  }, [series, minDate, maxDate, unit, locale, timezone]);
 
   const chartData = useMemo(() => {
     const { prepared, labels, lastIndex, isPartial } = buckets;
@@ -299,7 +305,9 @@ function TrafficChartComponent({
             padding: 6,
             callback: (_value: unknown, index: number) => {
               const start = buckets.starts[index];
-              return start ? formatDate(start, TICK_FORMATS[unit], locale) : '';
+              const pattern = unit === 'hour' && buckets.multiDay ? 'EEE ha' : TICK_FORMATS[unit];
+
+              return start ? formatDate(start, pattern, locale) : '';
             },
           },
         },

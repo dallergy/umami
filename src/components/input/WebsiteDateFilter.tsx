@@ -183,10 +183,14 @@ export function WebsiteDateFilter({
   };
 
   const shortcutHandlers: Record<string, () => void> = {
-    ArrowLeft: () => step(-1),
-    ArrowRight: () => step(1),
     c: () => setShowPicker(true),
   };
+
+  // Only claim the arrow keys when they can do something.
+  if (canStep) {
+    shortcutHandlers.ArrowLeft = () => step(-1);
+    shortcutHandlers.ArrowRight = () => step(1);
+  }
 
   for (const option of groups.flat()) {
     if (option.shortcut) {

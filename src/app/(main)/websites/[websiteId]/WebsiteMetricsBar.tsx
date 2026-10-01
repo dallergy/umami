@@ -1,4 +1,3 @@
-import { keepPreviousData } from '@tanstack/react-query';
 import type { ChartFocus } from '@/app/(main)/websites/[websiteId]/WebsiteChart';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { LoadingPanel } from '@/components/common/LoadingPanel';
@@ -31,8 +30,12 @@ export function WebsiteMetricsBar({
       websiteId,
       compare: compareMode ? dateCompare?.compare : undefined,
     },
-    // Keep the last numbers on screen while a new range loads instead of flashing a spinner.
-    { placeholderData: keepPreviousData } as any,
+    // Keep the last numbers on screen while a new range loads instead of flashing a
+    // skeleton, but never show another website's numbers.
+    {
+      placeholderData: (previous: any, previousQuery: any) =>
+        previousQuery?.queryKey?.[1]?.websiteId === websiteId ? previous : undefined,
+    } as any,
   );
 
   const { pageviews, visitors, visits, bounces, totaltime, comparison } = data || {};
