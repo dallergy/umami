@@ -11,7 +11,9 @@ permissions:
 jobs:
   scan:
     name: Scan for secrets
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    # GitHub-hosted runner. Upstream uses Blacksmith, which is not connected to this fork,
+    # so the scan stayed queued and never started.
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v6
