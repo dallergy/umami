@@ -8,20 +8,38 @@ export interface KeyValueData {
   dataType: DynamicDataType;
 }
 
-export function flattenJSON(eventData: Record<string, any>): KeyValueData[] {
-  function flatten(obj: Record<string, any>, parentKey: string): KeyValueData[] {
-    return Object.entries(obj).flatMap(([key, value]) => {
-      const fullKey = parentKey ? `${parentKey}.${key}` : key;
+// Documented limit: event and session data objects keep at most 50 properties. Each property
+// becomes a stored row, so this also bounds what one tracking request can write.
+export const MAX_DATA_PROPERTIES = 50;
+// Objects nested deeper than this are stored as a single JSON value instead of being expanded.
+export const MAX_DATA_DEPTH = 5;
 
-      if (value && typeof value === 'object' && !Array.isArray(value) && !isValidDateValue(value)) {
-        return flatten(value, fullKey);
+export function flattenJSON(eventData: Record<string, any>): KeyValueData[] {
+  const result: KeyValueData[] = [];
+
+  function flatten(obj: Record<string, any>, parentKey: string, depth: number) {
+    for (const [key, value] of Object.entries(obj)) {
+      if (result.length >= MAX_DATA_PROPERTIES) {
+        return;
       }
 
-      return [createKeyValue(fullKey, value)];
-    });
+      const fullKey = parentKey ? `${parentKey}.${key}` : key;
+      const isObject =
+        value && typeof value === 'object' && !Array.isArray(value) && !isValidDateValue(value);
+
+      if (isObject && depth < MAX_DATA_DEPTH) {
+        flatten(value, fullKey, depth + 1);
+      } else {
+        result.push(createKeyValue(fullKey, value));
+      }
+    }
   }
 
-  return flatten(eventData, '');
+  if (eventData && typeof eventData === 'object') {
+    flatten(eventData, '', 1);
+  }
+
+  return result;
 }
 
 export function isValidDateValue(value: string) {

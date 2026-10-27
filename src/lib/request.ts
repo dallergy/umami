@@ -59,6 +59,45 @@ export async function parseRequest(
   return { url, query, body, auth, error };
 }
 
+/**
+ * True when the request body is larger than maxBytes. Uses Content-Length when present;
+ * otherwise reads at most maxBytes + 1 bytes, so oversized bodies are never fully buffered.
+ */
+export async function isBodyTooLarge(request: Request, maxBytes: number): Promise<boolean> {
+  const contentLength = request.headers.get('content-length');
+
+  if (contentLength !== null && Number.isFinite(Number(contentLength))) {
+    return Number(contentLength) > maxBytes;
+  }
+
+  const body = request.clone().body;
+
+  if (!body) {
+    return false;
+  }
+
+  const reader = body.getReader();
+  let size = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        return false;
+      }
+
+      size += value.byteLength;
+
+      if (size > maxBytes) {
+        return true;
+      }
+    }
+  } finally {
+    reader.cancel().catch(() => undefined);
+  }
+}
+
 export async function getJsonBody(request: Request) {
   try {
     return await request.clone().json();

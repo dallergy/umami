@@ -11,7 +11,7 @@ import { getSalt, secret, uuid } from '@/lib/crypto';
 import { getClientInfo, hasBlockedIp } from '@/lib/detect';
 import { createToken, parseToken } from '@/lib/jwt';
 import { fetchWebsite } from '@/lib/load';
-import { parseRequest } from '@/lib/request';
+import { isBodyTooLarge, parseRequest } from '@/lib/request';
 import {
   createSession,
   saveEvent,
@@ -33,6 +33,7 @@ vi.mock('@/lib/load', () => ({
 }));
 
 vi.mock('@/lib/request', () => ({
+  isBodyTooLarge: vi.fn(async () => false),
   parseRequest: vi.fn(),
 }));
 
@@ -101,7 +102,13 @@ function makeComputedSessionId(
   const createdAt = new Date(timestamp * 1000);
   const sessionSalt = getSalt(process.env.SALT_ROTATION || 'month', createdAt);
 
-  return uuid(sourceId, defaultClientInfo.ip, defaultClientInfo.userAgent, sessionSalt, distinctId ?? '');
+  return uuid(
+    sourceId,
+    defaultClientInfo.ip,
+    defaultClientInfo.userAgent,
+    sessionSalt,
+    distinctId ?? '',
+  );
 }
 
 beforeEach(() => {
@@ -921,5 +928,16 @@ describe('error handling', () => {
       error: { code: 'server-error', status: 500 },
     });
     consoleLog.mockRestore();
+  });
+});
+
+describe('request size', () => {
+  test('rejects oversized tracking payloads before parsing them', async () => {
+    vi.mocked(isBodyTooLarge).mockResolvedValueOnce(true);
+
+    const response = await POST(new Request('http://localhost/api/send', { method: 'POST' }));
+
+    expect(response.status).toBe(413);
+    expect(parseRequestMock).not.toHaveBeenCalled();
   });
 });

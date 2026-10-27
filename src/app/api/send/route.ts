@@ -8,11 +8,17 @@ import { getClientInfo, hasBlockedIp } from '@/lib/detect';
 import { truncateString } from '@/lib/format';
 import { createToken, parseToken } from '@/lib/jwt';
 import { fetchWebsite } from '@/lib/load';
-import { parseRequest } from '@/lib/request';
-import { badRequest, forbidden, json, serverError } from '@/lib/response';
+import { isBodyTooLarge, parseRequest } from '@/lib/request';
+import { badRequest, forbidden, json, payloadTooLarge, serverError } from '@/lib/response';
 import { anyObjectParam, urlOrPathParam } from '@/lib/schema';
 import { safeDecodeURI, safeDecodeURIComponent } from '@/lib/url';
-import { createSession, saveEvent, saveSessionData, saveSessionLink, updateSession } from '@/queries/sql';
+import {
+  createSession,
+  saveEvent,
+  saveSessionData,
+  saveSessionLink,
+  updateSession,
+} from '@/queries/sql';
 
 interface Cache {
   websiteId: string;
@@ -25,6 +31,9 @@ interface Cache {
 // Reject strings whose first character is a spreadsheet formula trigger to
 // prevent CSV formula injection in analytics exports (defense-in-depth).
 const FORMULA_TRIGGER_RE = /^[=+\-@\t\r]/;
+
+// Tracking payloads are a few KB; this only bounds what an unauthenticated request can buffer.
+const MAX_SEND_REQUEST_BYTES = 1_000_000;
 const safeStringParam = () =>
   z.string().refine(val => !FORMULA_TRIGGER_RE.test(val), {
     message: 'Value must not start with =, +, -, @, tab, or carriage return',
@@ -74,6 +83,10 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   try {
+    if (await isBodyTooLarge(request, MAX_SEND_REQUEST_BYTES)) {
+      return payloadTooLarge({ maxBytes: MAX_SEND_REQUEST_BYTES });
+    }
+
     const { body, error } = await parseRequest(request, schema, { skipAuth: true });
 
     if (error) {

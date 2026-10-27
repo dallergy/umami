@@ -1,13 +1,20 @@
 import { z } from 'zod';
 import * as send from '@/app/api/send/route';
-import { parseRequest } from '@/lib/request';
-import { json, serverError } from '@/lib/response';
+import { isBodyTooLarge, parseRequest } from '@/lib/request';
+import { json, payloadTooLarge, serverError } from '@/lib/response';
 import { anyObjectParam } from '@/lib/schema';
 
 const schema = z.array(anyObjectParam).max(500);
 
+// Up to 500 events per batch; bounds what an unauthenticated request can buffer.
+const MAX_BATCH_REQUEST_BYTES = 10_000_000;
+
 export async function POST(request: Request) {
   try {
+    if (await isBodyTooLarge(request, MAX_BATCH_REQUEST_BYTES)) {
+      return payloadTooLarge({ maxBytes: MAX_BATCH_REQUEST_BYTES });
+    }
+
     const { body, error } = await parseRequest(request, schema, { skipAuth: true });
 
     if (error) {
