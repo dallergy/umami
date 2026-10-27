@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   buildPath,
   getQueryString,
+  isHttpUrl,
   isValidUrl,
   safeDecodeURI,
   safeDecodeURIComponent,
@@ -79,5 +80,22 @@ describe('isValidUrl', () => {
     expect(isValidUrl('not a url')).toBe(false);
     expect(isValidUrl('/relative/path')).toBe(false);
     expect(isValidUrl('')).toBe(false);
+  });
+});
+
+describe('isHttpUrl', () => {
+  test('accepts absolute http and https urls', () => {
+    expect(isHttpUrl('https://umami.is/docs')).toBe(true);
+    expect(isHttpUrl('http://localhost:3000')).toBe(true);
+  });
+
+  test('rejects other schemes, relative paths and non-strings', () => {
+    expect(isHttpUrl('javascript:alert(1)')).toBe(false);
+    expect(isHttpUrl('JaVaScRiPt:alert(1)')).toBe(false);
+    expect(isHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false);
+    expect(isHttpUrl('vbscript:msgbox(1)')).toBe(false);
+    expect(isHttpUrl('//evil.example')).toBe(false);
+    expect(isHttpUrl('/relative/path')).toBe(false);
+    expect(isHttpUrl(undefined)).toBe(false);
   });
 });

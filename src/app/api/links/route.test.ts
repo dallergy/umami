@@ -53,12 +53,12 @@ test('POST requires link slugs to be at least 8 characters so create matches edi
     safeParse: (value: unknown) => { success: boolean };
   };
 
-  expect(schema.safeParse({ name: 'Docs', url: 'https://example.com', slug: '1234567' }).success).toBe(
-    false,
-  );
-  expect(schema.safeParse({ name: 'Docs', url: 'https://example.com', slug: '12345678' }).success).toBe(
-    true,
-  );
+  expect(
+    schema.safeParse({ name: 'Docs', url: 'https://example.com', slug: '1234567' }).success,
+  ).toBe(false);
+  expect(
+    schema.safeParse({ name: 'Docs', url: 'https://example.com', slug: '12345678' }).success,
+  ).toBe(true);
   expect(createLinkMock).toHaveBeenCalledWith({
     id: expect.any(String),
     name: 'Docs',
@@ -68,4 +68,18 @@ test('POST requires link slugs to be at least 8 characters so create matches edi
     userId: 'user-1',
   });
   expect(response.status).toBe(200);
+});
+
+test('POST only accepts http and https link destinations', async () => {
+  parseRequestMock.mockResolvedValue({ auth: null, body: null, error: () => null } as any);
+
+  await POST(new Request('http://localhost/api/links', { method: 'POST' }));
+  const schema = parseRequestMock.mock.calls[0][1] as {
+    safeParse: (value: unknown) => { success: boolean };
+  };
+  const link = (url: string) => ({ name: 'Docs', url, slug: 'abcdefgh' });
+
+  expect(schema.safeParse(link('https://example.com/a')).success).toBe(true);
+  expect(schema.safeParse(link('javascript:alert(document.cookie)')).success).toBe(false);
+  expect(schema.safeParse(link('data:text/html,hi')).success).toBe(false);
 });

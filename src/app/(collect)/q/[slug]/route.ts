@@ -5,6 +5,7 @@ import { POST } from '@/app/api/send/route';
 import type { Link } from '@/generated/prisma/client';
 import redis from '@/lib/redis';
 import { notFound } from '@/lib/response';
+import { isHttpUrl } from '@/lib/url';
 import { findLink } from '@/queries/prisma';
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -58,6 +59,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   });
 
   await POST(req);
+
+  // Links saved before http(s) validation existed may hold other schemes; never redirect to them.
+  if (!isHttpUrl(link.url)) {
+    return notFound();
+  }
 
   return NextResponse.redirect(link.url);
 }

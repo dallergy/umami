@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isValidTimezone, normalizeTimezone } from '@/lib/date';
+import { isHttpUrl } from '@/lib/url';
 import { DATA_TYPE, FIELD_LENGTH, UNIT_TYPES } from './constants';
 
 export const timezoneParam = z
@@ -109,6 +110,12 @@ export const userRoleParam = z.enum(['admin', 'user', 'view-only']);
 export const teamRoleParam = z.enum(['team-member', 'team-view-only', 'team-manager']);
 
 export const anyObjectParam = z.record(z.string(), z.any());
+
+// Link destinations are rendered as links and used for redirects, so only web URLs are allowed.
+export const httpUrlParam = z
+  .string()
+  .max(500)
+  .refine(value => isHttpUrl(value), { message: 'URL must start with http:// or https://.' });
 
 export const urlOrPathParam = z.string().refine(
   value => {

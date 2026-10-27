@@ -47,3 +47,17 @@ export function isValidUrl(url: string) {
     return false;
   }
 }
+
+/** True only for absolute http(s) URLs, never javascript:, data: or other schemes. */
+export function isHttpUrl(url: unknown) {
+  if (typeof url !== 'string') {
+    return false;
+  }
+
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+}

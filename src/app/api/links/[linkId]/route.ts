@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { parseRequest } from '@/lib/request';
 import { badRequest, json, ok, serverError, unauthorized } from '@/lib/response';
+import { httpUrlParam } from '@/lib/schema';
 import { canDeleteLink, canUpdateLink, canViewLink } from '@/permissions';
 import { deleteLink, getLink, updateLink } from '@/queries/prisma';
 
@@ -25,7 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ link
 export async function POST(request: Request, { params }: { params: Promise<{ linkId: string }> }) {
   const schema = z.object({
     name: z.string().max(100).optional(),
-    url: z.string().max(500).optional(),
+    url: httpUrlParam.optional(),
     slug: z.string().min(8).max(100).optional(),
   });
 
