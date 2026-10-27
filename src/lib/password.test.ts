@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkPassword, hashPassword } from './password';
+import { checkPassword, checkPasswordForMissingUser, hashPassword } from './password';
 
 describe('hashPassword', () => {
   test('returns a bcrypt hash distinct from the plaintext', () => {
@@ -25,5 +25,12 @@ describe('checkPassword', () => {
     const hash = hashPassword('correct horse');
 
     expect(checkPassword('wrong horse', hash)).toBe(false);
+  });
+});
+
+describe('checkPasswordForMissingUser', () => {
+  test('always fails', () => {
+    expect(checkPasswordForMissingUser('anything')).toBe(false);
+    expect(checkPasswordForMissingUser(undefined as unknown as string)).toBe(false);
   });
 });

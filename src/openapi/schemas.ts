@@ -75,6 +75,12 @@ export const payloadTooLargeResponse = errorResponse(
   'payload-too-large',
   'Payload too large.',
 );
+export const tooManyRequestsResponse = errorResponse(
+  'TooManyRequestsResponse',
+  429,
+  'too-many-requests',
+  'Too many requests. Retry after the time in the Retry-After header.',
+);
 export const serverErrorResponse = errorResponse(
   'ServerErrorResponse',
   500,

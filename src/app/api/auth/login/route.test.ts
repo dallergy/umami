@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   parseRequest: vi.fn(),
   getUserByUsername: vi.fn(),
   checkPassword: vi.fn(),
+  checkPasswordForMissingUser: vi.fn(),
   findTwoFactorAuth: vi.fn(),
   createSecureToken: vi.fn(),
   secret: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock('@/queries/prisma', () => ({
 
 vi.mock('@/lib/password', () => ({
   checkPassword: mocks.checkPassword,
+  checkPasswordForMissingUser: mocks.checkPasswordForMissingUser,
 }));
 
 vi.mock('@/lib/prisma', () => ({
@@ -63,12 +65,20 @@ vi.mock('@/lib/two-factor/crypto', () => ({
   isTwoFactorConfigured: mocks.isTwoFactorConfigured,
 }));
 
+import { MAX_FAILURES_PER_CLIENT, resetLoginRateLimitMemory } from '@/lib/login-rate-limit';
 import { POST } from './route';
+
+const loginRequest = (ip = '203.0.113.7') =>
+  new Request('http://localhost/api/auth/login', {
+    method: 'POST',
+    headers: { 'x-forwarded-for': ip },
+  });
 
 beforeEach(() => {
   mocks.parseRequest.mockReset();
   mocks.getUserByUsername.mockReset();
   mocks.checkPassword.mockReset();
+  mocks.checkPasswordForMissingUser.mockReset();
   mocks.findTwoFactorAuth.mockReset();
   mocks.createSecureToken.mockReset();
   mocks.secret.mockReset();
@@ -76,6 +86,7 @@ beforeEach(() => {
   mocks.getAllUserTeams.mockReset();
   mocks.saveAuth.mockReset();
   mocks.isTwoFactorConfigured.mockReset();
+  resetLoginRateLimitMemory();
 
   mocks.parseRequest.mockResolvedValue({
     body: { username: 'alice', password: 'secret' },
@@ -105,4 +116,36 @@ test('POST returns a configuration error instead of partial auth when 2FA is ena
     },
   });
   expect(response.status).toBe(503);
+});
+
+test('POST spends a password check on unknown users so timing does not reveal them', async () => {
+  mocks.getUserByUsername.mockResolvedValue(null);
+  mocks.checkPasswordForMissingUser.mockReturnValue(false);
+
+  const response = await POST(loginRequest());
+
+  expect(mocks.checkPasswordForMissingUser).toHaveBeenCalledWith('secret');
+  expect(mocks.checkPassword).not.toHaveBeenCalled();
+  expect(response.status).toBe(401);
+});
+
+test('POST throttles a client after repeated failures, even with the right password', async () => {
+  mocks.checkPassword.mockReturnValue(false);
+
+  for (let i = 0; i < MAX_FAILURES_PER_CLIENT; i++) {
+    expect((await POST(loginRequest())).status).toBe(401);
+  }
+
+  mocks.checkPassword.mockReturnValue(true);
+  const response = await POST(loginRequest());
+
+  expect(response.status).toBe(429);
+  expect(response.headers.get('Retry-After')).toBeTruthy();
+  await expect(response.json()).resolves.toMatchObject({
+    error: { code: 'too-many-login-attempts' },
+  });
+  expect(mocks.checkPassword).toHaveBeenCalledTimes(MAX_FAILURES_PER_CLIENT);
+
+  // Other clients are unaffected by one client's failures.
+  expect((await POST(loginRequest('198.51.100.9'))).status).not.toBe(429);
 });
