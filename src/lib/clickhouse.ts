@@ -4,6 +4,7 @@ import debug from 'debug';
 import { CLICKHOUSE } from '@/lib/db';
 import { DATA_TYPE, DEFAULT_PAGE_SIZE, FILTER_COLUMNS, OPERATORS } from './constants';
 import { filtersObjectToArray } from './params';
+import { getSafeOrderBy } from './sort';
 import type { Operator, PropertyFilter, QueryFilters, QueryOptions } from './types';
 
 export const CLICKHOUSE_DATE_FORMATS = {
@@ -676,7 +677,9 @@ async function pagedRawQuery(
   filters: QueryFilters,
   name?: string,
 ) {
-  const { page = 1, pageSize, orderBy, sortDescending = false, search } = filters;
+  const { page = 1, pageSize, sortDescending = false, search } = filters;
+  // orderBy is interpolated into SQL, so only plain identifiers are accepted.
+  const orderBy = getSafeOrderBy(filters.orderBy);
   const size = +pageSize || DEFAULT_PAGE_SIZE;
   const offset = +size * (+page - 1);
   const direction = sortDescending ? 'desc' : 'asc';

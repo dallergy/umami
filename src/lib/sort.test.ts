@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { sanitizeSortFilters } from './sort';
+import { getSafeOrderBy, sanitizeSortFilters } from './sort';
 
 describe('sanitizeSortFilters', () => {
   const allowed = ['name', 'createdAt'] as const;
@@ -31,5 +31,23 @@ describe('sanitizeSortFilters', () => {
     const result = sanitizeSortFilters({ orderBy: 'bad', startDate: new Date(0) } as any, allowed);
     expect(result).toMatchObject({ startDate: new Date(0) });
     expect(result).not.toHaveProperty('orderBy');
+  });
+});
+
+describe('getSafeOrderBy', () => {
+  test('accepts plain, qualified and quoted identifiers', () => {
+    expect(getSafeOrderBy('created_at')).toBe('created_at');
+    expect(getSafeOrderBy('session.created_at')).toBe('session.created_at');
+    expect(getSafeOrderBy('"lastAt"')).toBe('"lastAt"');
+  });
+
+  test('rejects anything that could change the query', () => {
+    expect(getSafeOrderBy('created_at; drop table session')).toBeUndefined();
+    expect(getSafeOrderBy('1; select pg_sleep(5)')).toBeUndefined();
+    expect(getSafeOrderBy('(select password from "user" limit 1)')).toBeUndefined();
+    expect(getSafeOrderBy('name desc, id')).toBeUndefined();
+    expect(getSafeOrderBy('"a" or 1=1 --"')).toBeUndefined();
+    expect(getSafeOrderBy(undefined)).toBeUndefined();
+    expect(getSafeOrderBy(42)).toBeUndefined();
   });
 });

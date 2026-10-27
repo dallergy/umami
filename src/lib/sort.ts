@@ -25,3 +25,13 @@ export function sanitizeSortFilters<const T extends readonly string[]>(
         }),
   };
 }
+
+// A column or alias, optionally table-qualified or double-quoted (e.g. created_at, "lastAt",
+// session.created_at). Anything else is never interpolated into raw SQL.
+const SQL_IDENTIFIER =
+  /^(?:"[A-Za-z_][A-Za-z0-9_]*"|[A-Za-z_][A-Za-z0-9_]*)(?:\.(?:"[A-Za-z_][A-Za-z0-9_]*"|[A-Za-z_][A-Za-z0-9_]*))?$/;
+
+/** Returns orderBy when it is a plain SQL identifier, otherwise undefined. */
+export function getSafeOrderBy(orderBy?: unknown): string | undefined {
+  return typeof orderBy === 'string' && SQL_IDENTIFIER.test(orderBy) ? orderBy : undefined;
+}

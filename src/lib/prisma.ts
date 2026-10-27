@@ -4,6 +4,7 @@ import debug from 'debug';
 import { PrismaClient } from '@/generated/prisma/client';
 import { DATA_TYPE, DEFAULT_PAGE_SIZE, FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './constants';
 import { filtersObjectToArray } from './params';
+import { getSafeOrderBy } from './sort';
 import type { Operator, PropertyFilter, QueryFilters, QueryOptions } from './types';
 
 const log = debug('umami:prisma');
@@ -784,7 +785,9 @@ async function pagedRawQuery(
   name?: string,
   defaultOrderBy?: string,
 ) {
-  const { page = 1, pageSize, orderBy, sortDescending = false } = filters;
+  const { page = 1, pageSize, sortDescending = false } = filters;
+  // orderBy is interpolated into SQL, so only plain identifiers are accepted.
+  const orderBy = getSafeOrderBy(filters.orderBy);
   const size = +pageSize || DEFAULT_PAGE_SIZE;
   const offset = +size * (+page - 1);
   const direction = sortDescending ? 'desc' : 'asc';
