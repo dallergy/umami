@@ -1,5 +1,5 @@
 import debug from 'debug';
-import { createClient, type RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 const log = debug('umami:redis-client');
 
@@ -8,18 +8,18 @@ export const DEFAULT_TTL = 3600;
 
 const logError = (err: unknown) => log(err);
 
+// node-redis 6 defaults to RESP3, which needs HELLO support (Redis 6+). Stay on RESP2 so
+// older and Redis-compatible servers keep working; nothing here uses RESP3-only features.
+const createRedisClient = (url: string) => createClient({ url, RESP: 2 });
+
 class UmamiRedisClient {
   url: string;
-  client: RedisClientType;
+  client: ReturnType<typeof createRedisClient>;
   isConnected: boolean;
 
   constructor(url: string) {
-    // node-redis 6 defaults to RESP3, which needs HELLO support (Redis 6+). Stay on RESP2 so
-    // older and Redis-compatible servers keep working; nothing here uses RESP3-only features.
-    const client = createClient({ url, RESP: 2 }).on('error', logError);
-
     this.url = url;
-    this.client = client as RedisClientType;
+    this.client = createRedisClient(url).on('error', logError);
     this.isConnected = false;
   }
 
