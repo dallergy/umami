@@ -3301,6 +3301,24 @@ export interface components {
         'application/json': components['schemas']['ApiError'];
       };
     };
+    /** @description Too many requests. Retry after the time in the Retry-After header. */
+    TooManyRequestsResponse: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "code": "too-many-requests",
+         *         "message": "Too many requests. Retry after the time in the Retry-After header.",
+         *         "status": 429
+         *       }
+         *     }
+         */
+        'application/json': components['schemas']['ApiError'];
+      };
+    };
     /** @description Unauthorized. */
     UnauthorizedResponse: {
       headers: {
@@ -4894,6 +4912,7 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['TooManyRequestsResponse'];
       /** @description Service unavailable. */
       503: {
         headers: {
