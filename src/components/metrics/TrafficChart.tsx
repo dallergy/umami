@@ -139,6 +139,11 @@ function TrafficChartComponent({
   // Plugins are read once when the Chart.js instance is created, so they read colors from a ref.
   const plugins = useMemo(() => [createCrosshairPlugin(() => crosshairColor.current)], []);
 
+  // useDateRange builds new Date objects on every render. Keying the buckets on the timestamps
+  // stops unrelated re-renders from regenerating the series and replaying the chart animation.
+  const minTime = minDate.getTime();
+  const maxTime = maxDate.getTime();
+
   const buckets = useMemo(() => {
     // Buckets are wall-clock times in the analytics timezone, so compare against "now" there too.
     const now = toZonedTime(new Date(), timezone);
@@ -162,7 +167,7 @@ function TrafficChartComponent({
       starts.length > 1 && starts[0].toDateString() !== starts[starts.length - 1].toDateString();
 
     return { prepared, labels, starts, lastIndex, isPartial, multiDay };
-  }, [series, minDate, maxDate, unit, locale, timezone]);
+  }, [series, minTime, maxTime, unit, locale, timezone]);
 
   const chartData = useMemo(() => {
     const { prepared, labels, lastIndex, isPartial } = buckets;

@@ -1,7 +1,7 @@
 import { Dialog, Modal } from '@umami/react-zen';
 import { differenceInCalendarDays, isAfter, isSameDay, isSameYear } from 'date-fns';
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { ControlledDialog } from '@/components/common/ControlledDialog';
 import {
   useDateRange,
@@ -143,7 +143,17 @@ export function WebsiteDateFilter({
     return formatDateRange(dateRange.startDate, dateRange.endDate, locale);
   }, [selected, isAllTime, isCustomRange, offset, current, dateRange, locale, t, labels]);
 
+  // Steps that have been pushed but have not reached the URL yet. Without this, pressing an
+  // arrow twice before the router updates computes both steps from the same offset.
+  const pendingOffset = useRef<number | null>(null);
+
+  useEffect(() => {
+    pendingOffset.current = null;
+  }, [offset, current]);
+
   const applyRange = (value: string, nextOffset = 0) => {
+    pendingOffset.current = null;
+
     if (value === 'all') {
       if (!hasData) {
         return;
@@ -171,11 +181,21 @@ export function WebsiteDateFilter({
   };
 
   const step = (increment: number) => {
-    if (!canStep || (increment > 0 && disableForward)) {
+    if (!canStep) {
       return;
     }
 
-    router.push(updateParams({ offset: offset + increment || undefined }));
+    const base = pendingOffset.current ?? offset;
+
+    // Forward is only known to be safe while it stays at or behind the range on screen.
+    if (increment > 0 && (base > offset || (base === offset && disableForward))) {
+      return;
+    }
+
+    const next = base + increment;
+
+    pendingOffset.current = next;
+    router.push(updateParams({ offset: next || undefined }));
   };
 
   const setCompare = (value?: string) => {

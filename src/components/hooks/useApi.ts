@@ -15,55 +15,46 @@ async function handleResponse(res: FetchResponse): Promise<any> {
   return Promise.resolve(res.data);
 }
 
-export function useApi() {
-  const shareId = useApp(state => state.share?.shareId);
-  const shareToken = useApp(state => state.shareToken?.token);
+/**
+ * Credentials are read when each request is made, not when the hook renders. The request
+ * functions are memoized for the component's lifetime, so headers captured at render time
+ * would keep sending an old auth or share token after it changes.
+ */
+function getHeaders(headers: object = {}) {
+  const { share, shareToken } = useApp.getState() as {
+    share?: { shareId?: string } | null;
+    shareToken?: { token?: string } | null;
+  };
 
   const shareHeaders =
-    shareId && shareToken
-      ? { [SHARE_TOKEN_HEADER]: shareToken, [SHARE_CONTEXT_HEADER]: '1' }
+    share?.shareId && shareToken?.token
+      ? { [SHARE_TOKEN_HEADER]: shareToken.token, [SHARE_CONTEXT_HEADER]: '1' }
       : {};
 
-  const defaultHeaders = {
+  return {
     authorization: `Bearer ${getClientAuthToken()}`,
     ...shareHeaders,
+    ...headers,
   };
-  const getUrl = (url: string) => {
-    return getApiUrl(url);
-  };
+}
 
-  const getHeaders = (headers: any = {}) => {
-    return { ...defaultHeaders, ...headers };
-  };
-
+export function useApi() {
   return {
-    get: useCallback(
-      async (url: string, params: object = {}, headers: object = {}) => {
-        return httpGet(getUrl(url), params, getHeaders(headers)).then(handleResponse);
-      },
-      [httpGet],
-    ),
+    get: useCallback(async (url: string, params: object = {}, headers: object = {}) => {
+      return httpGet(getApiUrl(url), params, getHeaders(headers)).then(handleResponse);
+    }, []),
 
-    post: useCallback(
-      async (url: string, params: object = {}, headers: object = {}) => {
-        return httpPost(getUrl(url), params, getHeaders(headers)).then(handleResponse);
-      },
-      [httpPost],
-    ),
+    post: useCallback(async (url: string, params: object = {}, headers: object = {}) => {
+      return httpPost(getApiUrl(url), params, getHeaders(headers)).then(handleResponse);
+    }, []),
 
-    put: useCallback(
-      async (url: string, params: object = {}, headers: object = {}) => {
-        return httpPut(getUrl(url), params, getHeaders(headers)).then(handleResponse);
-      },
-      [httpPut],
-    ),
+    put: useCallback(async (url: string, params: object = {}, headers: object = {}) => {
+      return httpPut(getApiUrl(url), params, getHeaders(headers)).then(handleResponse);
+    }, []),
 
-    del: useCallback(
-      async (url: string, params: object = {}, headers: object = {}) => {
-        return httpDelete(getUrl(url), params, getHeaders(headers)).then(handleResponse);
-      },
-      [httpDelete],
-    ),
+    del: useCallback(async (url: string, params: object = {}, headers: object = {}) => {
+      return httpDelete(getApiUrl(url), params, getHeaders(headers)).then(handleResponse);
+    }, []),
     useQuery,
     useMutation,
   };

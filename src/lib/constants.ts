@@ -450,6 +450,7 @@ export const ISO_COUNTRIES = {
   ARG: 'AR',
   ARM: 'AM',
   ASM: 'AS',
+  ATA: 'AQ',
   ATF: 'TF',
   ATG: 'AG',
   AUS: 'AU',
