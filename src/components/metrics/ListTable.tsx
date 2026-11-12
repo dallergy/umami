@@ -62,10 +62,6 @@ export function ListTable({
     );
   };
 
-  const ListTableRow = ({ index, style }: RowComponentProps) => {
-    return <div style={style}>{getRow(data[index], index)}</div>;
-  };
-
   return (
     <Column gap>
       <Grid
@@ -88,7 +84,7 @@ export function ListTable({
             rowCount={data.length}
             rowHeight={ITEM_SIZE}
             rowComponent={ListTableRow}
-            rowProps={{}}
+            rowProps={{ rows: data, renderRow: getRow }}
           />
         ) : (
           data.map(getRow)
@@ -96,6 +92,17 @@ export function ListTable({
       </Column>
     </Column>
   );
+}
+
+interface ListTableRowProps {
+  rows: ListData[];
+  renderRow: (row: ListData, index: number) => ReactNode;
+}
+
+// Defined at module level so react-window keeps the same row component between renders.
+// A component created inside ListTable would remount every visible row on each render.
+function ListTableRow({ index, style, rows, renderRow }: RowComponentProps<ListTableRowProps>) {
+  return <div style={style}>{renderRow(rows[index], index)}</div>;
 }
 
 const AnimatedRow = ({

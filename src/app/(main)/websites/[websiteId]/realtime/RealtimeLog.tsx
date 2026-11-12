@@ -1,5 +1,5 @@
 import { Column, Heading, Row, SearchField, Text } from '@umami/react-zen';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { List, type RowComponentProps } from 'react-window';
 import { SessionModal } from '@/app/(main)/websites/[websiteId]/sessions/SessionModal';
 import { Avatar } from '@/components/common/Avatar';
@@ -34,6 +34,43 @@ const icons = {
   [TYPE_EVENT]: <Lightning />,
 };
 
+interface RealtimeLogRowProps {
+  logs: any[];
+  getSessionUrl: (sessionId: string) => string;
+  getTime: (row: any) => ReactNode;
+  getDetail: (row: any) => ReactNode;
+}
+
+// Defined at module level so react-window keeps the same row component between renders.
+// The log refreshes every few seconds, and a component created inside RealtimeLog would
+// remount every visible row (and its avatar) on each refresh.
+function RealtimeLogRow({
+  index,
+  style,
+  logs,
+  getSessionUrl,
+  getTime,
+  getDetail,
+}: RowComponentProps<RealtimeLogRowProps>) {
+  const row = logs[index];
+
+  return (
+    <Row alignItems="center" style={{ ...style, minWidth: 0 }} gap>
+      <Row minWidth="30px">
+        <Link href={getSessionUrl(row.sessionId)}>
+          <Avatar seed={row.sessionId} size={32} />
+        </Link>
+      </Row>
+      <Row minWidth="100px">
+        <Text wrap="nowrap">{getTime(row)}</Text>
+      </Row>
+      <IconLabel icon={icons[row.__type]} style={{ minWidth: 0, flex: 1 }}>
+        <Text truncate>{getDetail(row)}</Text>
+      </IconLabel>
+    </Row>
+  );
+}
+
 export function RealtimeLog({ data }: { data: any }) {
   const website = useWebsite();
   const [search, setSearch] = useState('');
@@ -66,8 +103,6 @@ export function RealtimeLog({ data }: { data: any }) {
   ];
 
   const getTime = ({ createdAt, firstAt }) => formatTimezoneDate(firstAt || createdAt, 'pp');
-
-  const getIcon = ({ __type }) => icons[__type];
 
   const getDetail = (log: {
     __type: string;
@@ -123,24 +158,7 @@ export function RealtimeLog({ data }: { data: any }) {
     }
   };
 
-  const TableRow = ({ index, style, logs }: RowComponentProps<{ logs: any[] }>) => {
-    const row = logs[index];
-    return (
-      <Row alignItems="center" style={{ ...style, minWidth: 0 }} gap>
-        <Row minWidth="30px">
-          <Link href={updateParams({ session: row.sessionId })}>
-            <Avatar seed={row.sessionId} size={32} />
-          </Link>
-        </Row>
-        <Row minWidth="100px">
-          <Text wrap="nowrap">{getTime(row)}</Text>
-        </Row>
-        <IconLabel icon={getIcon(row)} style={{ minWidth: 0, flex: 1 }}>
-          <Text truncate>{getDetail(row)}</Text>
-        </IconLabel>
-      </Row>
-    );
-  };
+  const getSessionUrl = (sessionId: string) => updateParams({ session: sessionId });
 
   const logs = useMemo(() => {
     if (!data) {
@@ -208,10 +226,10 @@ export function RealtimeLog({ data }: { data: any }) {
         {logs?.length === 0 && <Empty />}
         {logs.length > 0 && (
           <List
-            rowComponent={TableRow}
+            rowComponent={RealtimeLogRow}
             rowCount={logs.length}
             rowHeight={ROW_HEIGHT}
-            rowProps={{ logs }}
+            rowProps={{ logs, getSessionUrl, getTime, getDetail }}
             defaultHeight={listHeight}
             style={{ width: '100%', height: listHeight }}
           />
