@@ -1,6 +1,6 @@
 import { Column, type ColumnProps, useTheme } from '@umami/react-zen';
 import { colord } from 'colord';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 import {
   useCountryNames,
@@ -107,26 +107,21 @@ const CountryLayer = memo(function CountryLayer({
             return null;
           }
 
+          const selectable = Boolean(onSelect && values.has(code));
+
+          // Geography renders a plain <path>, so hover and focus states are styled with CSS.
           return (
             <Geography
               key={geo.rsmKey}
               geography={geo}
+              className={`outline-none hover:fill-(--map-hover) ${selectable ? 'cursor-pointer' : 'cursor-default'}`}
               fill={fill(code)}
               stroke={palette.stroke}
               strokeWidth={0.5}
-              style={{
-                default: { outline: 'none' },
-                hover: {
-                  outline: 'none',
-                  fill: palette.hover,
-                  cursor: onSelect && values.has(code) ? 'pointer' : 'default',
-                },
-                pressed: { outline: 'none' },
-              }}
-              onMouseEnter={(event: React.MouseEvent) => onHover(code, event)}
-              onMouseMove={(event: React.MouseEvent) => onHover(code, event)}
+              onMouseEnter={event => onHover(code, event)}
+              onMouseMove={event => onHover(code, event)}
               onMouseLeave={onLeave}
-              onClick={onSelect && values.has(code) ? () => onSelect(code) : undefined}
+              onClick={selectable ? () => onSelect(code) : undefined}
             />
           );
         })
@@ -229,7 +224,11 @@ export function WorldMap({
 
   return (
     <Column {...props} style={{ margin: 'auto 0', overflow: 'hidden', ...props.style }}>
-      <div ref={containerRef} className="relative">
+      <div
+        ref={containerRef}
+        className="relative"
+        style={{ '--map-hover': palette.hover } as CSSProperties}
+      >
         <ComposableMap
           projection="geoMercator"
           projectionConfig={zoomable ? undefined : { scale: 120, center: [10, 30] }}

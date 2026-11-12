@@ -14,7 +14,9 @@ class UmamiRedisClient {
   isConnected: boolean;
 
   constructor(url: string) {
-    const client = createClient({ url }).on('error', logError);
+    // node-redis 6 defaults to RESP3, which needs HELLO support (Redis 6+). Stay on RESP2 so
+    // older and Redis-compatible servers keep working; nothing here uses RESP3-only features.
+    const client = createClient({ url, RESP: 2 }).on('error', logError);
 
     this.url = url;
     this.client = client as RedisClientType;

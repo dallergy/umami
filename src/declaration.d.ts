@@ -9,7 +9,6 @@ declare module 'jsonwebtoken';
 declare module 'md5';
 declare module 'papaparse';
 declare module 'prettier';
-declare module 'react-simple-maps';
 declare module 'semver';
 declare module 'tsup';
 declare module 'uuid';
