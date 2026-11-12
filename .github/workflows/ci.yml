@@ -11,8 +11,9 @@ env:
 
 jobs:
   build:
-    if: github.repository == 'umami-software/umami'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    # GitHub-hosted runner. Upstream limits this job to umami-software/umami on Blacksmith,
+    # which is not connected to this fork, so the fork had no CI at all.
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v6
